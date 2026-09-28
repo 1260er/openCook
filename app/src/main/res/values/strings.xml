@@ -425,6 +425,31 @@
     <string name="action_delete">Delete</string>
     <string name="recipe_delete_confirm_title">Delete recipe?</string>
     <string name="recipe_delete_confirm_text">This recipe will be permanently deleted.</string>
+    <!-- Multi-select in the recipe list (long-press a card) -->
+    <string name="recipes_selected_of">%1$d of %2$d</string>
+    <string name="recipes_select_all">Select all</string>
+    <string name="recipes_selection_cancel">Cancel selection</string>
+    <string name="recipes_select_none">Deselect all</string>
+    <plurals name="recipes_bulk_edit_title">
+        <item quantity="one">Edit %1$d recipe</item>
+        <item quantity="other">Edit %1$d recipes</item>
+    </plurals>
+    <string name="recipes_bulk_apply">Apply</string>
+    <string name="recipes_bulk_mixed">Mixed</string>
+    <string name="recipes_bulk_no_cookbook">No cookbook</string>
+    <string name="recipes_bulk_mealtypes_hint">Tap a meal to give it to all of them, or to none.</string>
+    <plurals name="recipes_bulk_done">
+        <item quantity="one">Updated %1$d recipe</item>
+        <item quantity="other">Updated %1$d recipes</item>
+    </plurals>
+    <plurals name="recipes_delete_selected_title">
+        <item quantity="one">Delete %1$d recipe?</item>
+        <item quantity="other">Delete %1$d recipes?</item>
+    </plurals>
+    <plurals name="recipes_delete_selected_text">
+        <item quantity="one">This recipe will be permanently deleted.</item>
+        <item quantity="other">These recipes will be permanently deleted.</item>
+    </plurals>
     <string name="settings_leave_confirm_title">Leave household?</string>
     <string name="settings_leave_confirm_text">This device leaves the household and returns to first-time setup. The shared data stays on the server.</string>
     <string name="undo">Undo</string>

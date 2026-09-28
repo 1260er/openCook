@@ -46,6 +46,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
@@ -55,6 +56,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -1155,23 +1157,35 @@ private fun EmptyHint(text: String) {
 
 /** Multi-select "suitable for" picker: [MealTypes.KEYS] as toggleable chips. Unlike the
  *  single-select [CategoryChips], several meals can be active (soup = lunch AND dinner).
- *  An empty selection is allowed — it stores null, and the lunch+dinner default applies. */
+ *  An empty selection is allowed — it stores null, and the lunch+dinner default applies.
+ *  [mixed] marks meals only some of several recipes have (the recipe list's bulk edit). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun MealTypeChips(selected: List<String>, onToggle: (String) -> Unit) {
+internal fun MealTypeChips(
+    selected: List<String>,
+    onToggle: (String) -> Unit,
+    mixed: Set<String> = emptySet(),
+    showLabel: Boolean = true,
+) {
     Column {
-        Text(
-            stringResource(R.string.recipe_mealtypes_label),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(Spacing.xs))
+        if (showLabel) {
+            Text(
+                stringResource(R.string.recipe_mealtypes_label),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(Spacing.xs))
+        }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
             MealTypes.KEYS.forEach { key ->
                 FilterChip(
                     selected = key in selected,
                     onClick = { onToggle(key) },
                     label = { Text(stringResource(MealTypes.labelRes(key))) },
+                    // The checkbox's "indeterminate" dash, so "some of them" reads as its own state.
+                    leadingIcon = if (key in mixed && key !in selected) {
+                        { Icon(Icons.Outlined.Remove, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) }
+                    } else null,
                 )
             }
         }
@@ -1181,15 +1195,17 @@ private fun MealTypeChips(selected: List<String>, onToggle: (String) -> Unit) {
 /** Coarse-category picker: the fixed [RecipeCategories.KEYS] as toggleable chips (stores the key). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun CategoryChips(current: String, onPick: (String) -> Unit) {
+internal fun CategoryChips(current: String, onPick: (String) -> Unit, showLabel: Boolean = true) {
     val selected = current.takeIf { it.isNotBlank() }?.let { RecipeCategories.normalizeKey(it) }
     Column {
-        Text(
-            stringResource(R.string.review_category),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(Spacing.xs))
+        if (showLabel) {
+            Text(
+                stringResource(R.string.review_category),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(Spacing.xs))
+        }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
             RecipeCategories.KEYS.forEach { key ->
                 FilterChip(

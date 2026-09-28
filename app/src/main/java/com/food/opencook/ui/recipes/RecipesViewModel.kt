@@ -118,7 +118,7 @@ internal object RecipeSearchFilter {
 @HiltViewModel
 class RecipesViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    repository: RecipeRepository,
+    private val repository: RecipeRepository,
     pantryRepository: PantryRepository,
     private val settings: SettingsRepository,
 ) : ViewModel() {
@@ -182,6 +182,55 @@ class RecipesViewModel @Inject constructor(
             // list (and in the tab transition that got us here).
             .flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    private val _selection = MutableStateFlow<Set<String>>(emptySet())
+
+    /**
+     * Recipes picked for a bulk action; empty = not in selection mode. Always a subset of
+     * what the list shows: narrowing the search drops what scrolled out of it, so the count
+     * in the bar and the confirmation is exactly what the user can see being deleted.
+     */
+    val selection: StateFlow<Set<String>> =
+        combine(_selection, recipes) { picked, shown ->
+            if (picked.isEmpty()) picked else picked intersect shown.mapTo(HashSet()) { it.recipe.id }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    fun toggleSelected(recipeId: String) = _selection.update {
+        if (recipeId in it) it - recipeId else it + recipeId
+    }
+
+    fun selectAll() { _selection.value = recipes.value.mapTo(HashSet()) { it.recipe.id } }
+
+    fun clearSelection() { _selection.value = emptySet() }
+
+    /** Delete the selected recipes (each emits its own tombstone) and leave selection mode. */
+    fun deleteSelected() {
+        val ids = selection.value
+        _selection.value = emptySet()
+        viewModelScope.launch { repository.deleteRecipes(ids) }
+    }
+
+    /** The picked recipes themselves — the bulk-edit dialogs start from their current values. */
+    fun selectedRecipes(): List<RecipeListItem> = selection.value.let { ids ->
+        recipes.value.filter { it.recipe.id in ids }
+    }
+
+    /**
+     * Apply the bulk-edit sheet to the selection. Null / empty means "left alone": only the
+     * fields the user actually touched are written, each recipe keeping the rest.
+     */
+    fun editSelection(cookbook: String?, category: String?, addMeals: Set<String>, removeMeals: Set<String>) =
+        bulkEdit { ids ->
+            cookbook?.let { repository.setCookbook(ids, it) }
+            category?.let { repository.setCategory(ids, it) }
+            repository.editMealTypes(ids, addMeals, removeMeals)
+        }
+
+    /** Edits keep the selection — setting a cookbook and then the meals is one job, not two. */
+    private fun bulkEdit(action: suspend (Set<String>) -> Unit) {
+        val ids = selection.value
+        viewModelScope.launch { action(ids) }
+    }
 
     val serverBaseUrl: StateFlow<String?> =
         settings.serverUrl.stateIn(viewModelScope, SharingStarted.Eagerly, null)

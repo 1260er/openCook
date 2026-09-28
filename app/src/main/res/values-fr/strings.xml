@@ -434,6 +434,35 @@
     <string name="action_delete">Supprimer</string>
     <string name="recipe_delete_confirm_title">Supprimer la recette ?</string>
     <string name="recipe_delete_confirm_text">Cette recette sera définitivement supprimée.</string>
+    <!-- Multi-select in the recipe list (long-press a card) -->
+    <string name="recipes_selected_of">%1$d sur %2$d</string>
+    <string name="recipes_select_all">Tout sélectionner</string>
+    <string name="recipes_selection_cancel">Annuler la sélection</string>
+    <string name="recipes_select_none">Tout désélectionner</string>
+    <plurals name="recipes_bulk_edit_title">
+        <item quantity="one">Modifier %1$d recette</item>
+        <item quantity="many">Modifier %1$d recettes</item>
+        <item quantity="other">Modifier %1$d recettes</item>
+    </plurals>
+    <string name="recipes_bulk_apply">Appliquer</string>
+    <string name="recipes_bulk_mixed">Différents</string>
+    <string name="recipes_bulk_no_cookbook">Aucun livre de recettes</string>
+    <string name="recipes_bulk_mealtypes_hint">Touchez un repas pour l\'attribuer à toutes, ou à aucune.</string>
+    <plurals name="recipes_bulk_done">
+        <item quantity="one">%1$d recette modifiée</item>
+        <item quantity="many">%1$d recettes modifiées</item>
+        <item quantity="other">%1$d recettes modifiées</item>
+    </plurals>
+    <plurals name="recipes_delete_selected_title">
+        <item quantity="one">Supprimer %1$d recette ?</item>
+        <item quantity="many">Supprimer %1$d recettes ?</item>
+        <item quantity="other">Supprimer %1$d recettes ?</item>
+    </plurals>
+    <plurals name="recipes_delete_selected_text">
+        <item quantity="one">Cette recette sera définitivement supprimée.</item>
+        <item quantity="many">Ces recettes seront définitivement supprimées.</item>
+        <item quantity="other">Ces recettes seront définitivement supprimées.</item>
+    </plurals>
     <string name="settings_leave_confirm_title">Quitter le foyer ?</string>
     <string name="settings_leave_confirm_text">Cet appareil quitte le foyer et revient à la configuration initiale. Les données partagées restent sur le serveur.</string>
     <string name="undo">Annuler</string>

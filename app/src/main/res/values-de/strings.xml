@@ -427,6 +427,31 @@
     <string name="action_delete">Löschen</string>
     <string name="recipe_delete_confirm_title">Rezept löschen?</string>
     <string name="recipe_delete_confirm_text">Dieses Rezept wird dauerhaft gelöscht.</string>
+    <!-- Multi-select in the recipe list (long-press a card) -->
+    <string name="recipes_selected_of">%1$d von %2$d</string>
+    <string name="recipes_select_all">Alle auswählen</string>
+    <string name="recipes_selection_cancel">Auswahl beenden</string>
+    <string name="recipes_select_none">Auswahl aufheben</string>
+    <plurals name="recipes_bulk_edit_title">
+        <item quantity="one">%1$d Rezept bearbeiten</item>
+        <item quantity="other">%1$d Rezepte bearbeiten</item>
+    </plurals>
+    <string name="recipes_bulk_apply">Übernehmen</string>
+    <string name="recipes_bulk_mixed">Unterschiedlich</string>
+    <string name="recipes_bulk_no_cookbook">Kein Kochbuch</string>
+    <string name="recipes_bulk_mealtypes_hint">Tippe eine Mahlzeit an, um sie allen zu geben – oder keinem.</string>
+    <plurals name="recipes_bulk_done">
+        <item quantity="one">%1$d Rezept geändert</item>
+        <item quantity="other">%1$d Rezepte geändert</item>
+    </plurals>
+    <plurals name="recipes_delete_selected_title">
+        <item quantity="one">%1$d Rezept löschen?</item>
+        <item quantity="other">%1$d Rezepte löschen?</item>
+    </plurals>
+    <plurals name="recipes_delete_selected_text">
+        <item quantity="one">Dieses Rezept wird dauerhaft gelöscht.</item>
+        <item quantity="other">Diese Rezepte werden dauerhaft gelöscht.</item>
+    </plurals>
     <string name="settings_leave_confirm_title">Haushalt verlassen?</string>
     <string name="settings_leave_confirm_text">Dieses Gerät trennt sich vom Haushalt und kehrt zur Ersteinrichtung zurück. Die geteilten Daten bleiben auf dem Server.</string>
     <string name="undo">Rückgängig</string>
