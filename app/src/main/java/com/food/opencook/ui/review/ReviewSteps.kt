@@ -961,7 +961,8 @@ private class ListReorder {
     var bounds = Rect.Zero
     var dragged by mutableIntStateOf(-1)
     var hovered by mutableIntStateOf(-1)
-    val scrollSpeed = mutableFloatStateOf(0f)
+    // Last drag location in root coordinates. The viewport can change while it scrolls.
+    var pointerY by mutableFloatStateOf(Float.NaN)
     var onMove: (from: Int, to: Int) -> Unit = { _, _ -> }
     var size = 0
 
@@ -979,9 +980,21 @@ private class ListReorder {
     }
 
     fun reset() {
-        scrollSpeed.floatValue = 0f
+        pointerY = Float.NaN
         hovered = -1
         dragged = -1
+    }
+
+    fun scrollAtEdge(edgeZonePx: Float, maxStepPx: Float): Float {
+        val y = pointerY
+        if (y.isNaN() || y < bounds.top || y > bounds.bottom) return 0f
+        return when {
+            y < bounds.top + edgeZonePx ->
+                -maxStepPx * ((bounds.top + edgeZonePx - y) / edgeZonePx).coerceIn(0f, 1f)
+            y > bounds.bottom - edgeZonePx ->
+                maxStepPx * ((y - (bounds.bottom - edgeZonePx)) / edgeZonePx).coerceIn(0f, 1f)
+            else -> 0f
+        }
     }
 }
 
@@ -989,17 +1002,21 @@ private class ListReorder {
 private fun rememberListReorder(scroll: ScrollState, onMove: (from: Int, to: Int) -> Unit): ListReorder {
     val reorder = remember { ListReorder() }
     reorder.onMove = onMove
-    // scrollSpeed is px per 60 Hz frame; scaling it by the real frame time keeps the speed the
+    // Edge speed is px per 60 Hz frame; scaling it by the real frame time keeps the speed the
     // same on a 90/120 Hz display, where a per-frame step would race through a list of
     // small ingredient cards twice as fast.
-    LaunchedEffect(reorder) {
+    val edgeZonePx = with(LocalDensity.current) { 48.dp.toPx() }
+    val maxStepPx = with(LocalDensity.current) { 8.dp.toPx() }
+    LaunchedEffect(reorder, scroll, edgeZonePx, maxStepPx) {
         var last = withFrameNanos { it }
         while (true) {
             val now = withFrameNanos { it }
             val frames = ((now - last) / FRAME_60HZ_NANOS).coerceAtMost(3f)
             last = now
-            val v = reorder.scrollSpeed.floatValue
-            if (v != 0f) scroll.scrollBy(v * frames)
+            val v = reorder.scrollAtEdge(edgeZonePx, maxStepPx)
+            if ((v < 0f && scroll.value > 0) || (v > 0f && scroll.value < scroll.maxValue)) {
+                scroll.scrollBy(v * frames)
+            }
         }
     }
     return reorder
@@ -1007,20 +1024,12 @@ private fun rememberListReorder(scroll: ScrollState, onMove: (from: Int, to: Int
 
 @Composable
 private fun Modifier.reorderTarget(reorder: ListReorder): Modifier {
-    val edgeZonePx = with(LocalDensity.current) { 72.dp.toPx() }
-    val maxStepPx = with(LocalDensity.current) { 18.dp.toPx() }
     val target = remember(reorder) {
         object : DragAndDropTarget {
+            override fun onEntered(event: DragAndDropEvent) = onMoved(event)
             override fun onMoved(event: DragAndDropEvent) {
                 val e = event.toAndroidDragEvent()
-                val b = reorder.bounds
-                reorder.scrollSpeed.floatValue = when {
-                    e.y < b.top + edgeZonePx ->
-                        -maxStepPx * ((b.top + edgeZonePx - e.y) / edgeZonePx).coerceIn(0f, 1f)
-                    e.y > b.bottom - edgeZonePx ->
-                        maxStepPx * ((e.y - (b.bottom - edgeZonePx)) / edgeZonePx).coerceIn(0f, 1f)
-                    else -> 0f
-                }
+                reorder.pointerY = e.y
                 reorder.hovered = reorder.rowAt(e.y)
             }
             override fun onDrop(event: DragAndDropEvent): Boolean {
@@ -1032,7 +1041,7 @@ private fun Modifier.reorderTarget(reorder: ListReorder): Modifier {
                 return true
             }
             override fun onExited(event: DragAndDropEvent) {
-                reorder.scrollSpeed.floatValue = 0f
+                reorder.pointerY = Float.NaN
                 reorder.hovered = -1
             }
             override fun onEnded(event: DragAndDropEvent) = reorder.reset()
