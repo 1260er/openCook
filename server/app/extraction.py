@@ -309,7 +309,10 @@ def _extend_photo_top(image: Image.Image, x1: int, y1: int, x2: int, y2: int) ->
 
     if not colorful(min(y1 + 4, image.height - 1)):
         return y1
-    upper = max(0, y1 - min(int((y2 - y1) * .3), 180))
+    # Vision models can start a box well inside a wide photo. A 30%-height search
+    # recovered part of the grill in a real scan but still left its upper rim out.
+    # The dark page header above the photo stops this search before other content.
+    upper = max(0, y1 - min(int((y2 - y1) * .75), int(image.height * .35)))
     edge = y1
     for y in range(y1 - 4, upper - 1, -4):
         if not colorful(y):
