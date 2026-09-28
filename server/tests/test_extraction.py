@@ -677,3 +677,11 @@ def test_crop_recovers_colorful_photo_top_without_dark_header():
     ImageDraw.Draw(page).rectangle((20, 50, 279, 180), fill=(50, 130, 35))
     assert _extend_photo_top(page, 20, 80, 280, 185) == 52
     assert _extend_photo_top(page, 20, 185, 280, 230) == 185
+
+
+def test_crop_recovers_top_when_box_starts_deep_inside_photo():
+    from PIL import ImageDraw
+
+    page = Image.new("RGB", (300, 250), (20, 20, 20))
+    ImageDraw.Draw(page).rectangle((20, 50, 279, 185), fill=(50, 130, 35))
+    assert _extend_photo_top(page, 20, 130, 280, 245) == 50
