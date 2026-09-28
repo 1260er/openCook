@@ -102,6 +102,7 @@ data class EditableRecipe(
     // wipe would sync). Carried through verbatim.
     val lastCookedAt: String? = null,
     val totalTime: String? = null,
+    val description: String? = null,
 )
 
 /**
@@ -127,6 +128,9 @@ data class EditableNutrition(
     val fat: String,
     val carbs: String,
     val basis: String,
+    // Not shown in the editor; carried through so an edit doesn't wipe them (see EditableRecipe).
+    val fiber: String? = null,
+    val sugar: String? = null,
 )
 
 @HiltViewModel
@@ -440,6 +444,7 @@ class ReviewViewModel @Inject constructor(
             prepTime = DurationFormat.toIso(e.prepTime),
             cookTime = DurationFormat.toIso(e.cookTime),
             totalTime = e.totalTime,
+            description = e.description,
             tags = e.tags,
             lastCookedAt = e.lastCookedAt,
             sourcePhotoId = e.sourcePhotoId,
@@ -497,6 +502,7 @@ private fun RecipeWithDetails.toEditable() = EditableRecipe(
     tags = recipe.tags,
     lastCookedAt = recipe.lastCookedAt,
     totalTime = recipe.totalTime,
+    description = recipe.description,
     ingredients = ingredients.sortedBy { it.position }
         .map { EditableIngredient(it.id, Numbers.formatQuantity(it.quantity).orEmpty(), it.unit.orEmpty(), it.name) },
     instructions = instructions.sortedBy { it.position }.map { EditableInstruction(it.id, it.text) },
@@ -507,6 +513,8 @@ private fun RecipeWithDetails.toEditable() = EditableRecipe(
             fat = it.fatContent.orEmpty(),
             carbs = it.carbohydrateContent.orEmpty(),
             basis = it.basis.orEmpty(),
+            fiber = it.fiberContent,
+            sugar = it.sugarContent,
         )
     },
     images = images.sortedByDescending { it.isPrimary },
@@ -521,6 +529,8 @@ private fun EditableNutrition.toEntity(recipeId: String): NutritionEntity? {
         proteinContent = protein.ifBlank { null },
         fatContent = fat.ifBlank { null },
         carbohydrateContent = carbs.ifBlank { null },
+        fiberContent = fiber,
+        sugarContent = sugar,
         basis = basis.ifBlank { null },
     )
 }
