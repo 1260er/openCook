@@ -25,7 +25,7 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
-from app.ollama_client import OllamaClient
+from app.vision_client import VisionClient
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +198,7 @@ def _assign_boxes(recipe_titles: list[str], boxes: list[_Box]) -> dict[int, _Box
 
 
 class RecipeExtractor:
-    def __init__(self, client: OllamaClient, images_dir: Path) -> None:
+    def __init__(self, client: VisionClient, images_dir: Path) -> None:
         self._client = client
         self._images_dir = images_dir
 
