@@ -51,6 +51,7 @@ object DurationFormat {
 
     @Volatile private var hours = wordRegex(DEFAULT_HOURS)
     @Volatile private var minutes = wordRegex(DEFAULT_MINUTES)
+    @Volatile private var inText = textRegex(DEFAULT_HOURS, DEFAULT_MINUTES)
     /** Plain fallback for unit tests and the moments before `LocalizedLists` has run. */
     private val PLAIN_RENDERER: (Int, Int) -> String = { h, m ->
         listOfNotNull(
@@ -67,6 +68,7 @@ object DurationFormat {
     fun setUnits(hourWords: List<String>, minuteWords: List<String>) {
         if (hourWords.isNotEmpty()) hours = wordRegex(hourWords)
         if (minuteWords.isNotEmpty()) minutes = wordRegex(minuteWords)
+        inText = textRegex(hourWords.ifEmpty { DEFAULT_HOURS }, minuteWords.ifEmpty { DEFAULT_MINUTES })
     }
 
     /** Replace how a duration is written out — `LocalizedLists` hands in the platform's own
@@ -83,6 +85,50 @@ object DurationFormat {
             .joinToString("|", prefix = """(\d+)[\s\u00A0\u202F]*(?:""", postfix = ")") { Regex.escape(it) },
         RegexOption.IGNORE_CASE,
     )
+
+    /**
+     * A cooking time inside running text: "10 Minuten", "1 Std. 30 Min.", "5–7 min",
+     * "1,5 hours". Unlike [wordRegex] a unit must end the word — "200 ml" is no minute and
+     * "10 Hähnchenschenkel" no hour — and a number is taken whole, so "1,5 Stunden" can't
+     * shrink to five hours. A range keeps its first value (look early rather than late).
+     * Groups: 1 = hours, 2 = minutes after hours, 3 = minutes alone.
+     */
+    private fun textRegex(hourWords: List<String>, minuteWords: List<String>): Regex {
+        fun alt(words: List<String>) = words.filter { it.isNotBlank() }
+            .sortedByDescending { it.length }
+            .joinToString("|") { Regex.escape(it) }
+        val num = """\d+(?:[.,]\d+)?"""
+        val gap = """[\s  ]*"""
+        val range = """(?:$gap[-–]$gap$num)?"""
+        val h = """(?:${alt(hourWords)})(?!\p{L})"""
+        val m = """(?:${alt(minuteWords)})(?!\p{L})"""
+        return Regex(
+            """(?<![\d.,])(?:($num)$range$gap$h(?:\.?$gap($num)$gap$m)?|($num)$range$gap$m)""",
+            RegexOption.IGNORE_CASE,
+        )
+    }
+
+    /** One cooking time found in a text by [findIn]: where it sits, and how long it is. */
+    data class TextDuration(val range: IntRange, val seconds: Int)
+
+    /** The longest timer the platform accepts (`AlarmClock.EXTRA_LENGTH`): 24 hours. */
+    const val MAX_TIMER_SECONDS = 24 * 60 * 60
+
+    /**
+     * Every cooking time in a recipe step, in order — what the detail screen turns into
+     * timer links. Durations outside 1 s..24 h are dropped; nobody sets a timer for those.
+     */
+    fun findIn(text: String): List<TextDuration> = inText.findAll(text).mapNotNull { match ->
+        val g = match.groupValues
+        fun value(s: String) = s.replace(',', '.').toDoubleOrNull() ?: 0.0
+        val seconds = if (g[1].isNotEmpty()) {
+            value(g[1]) * 3600 + (g[2].takeIf { it.isNotEmpty() }?.let(::value) ?: 0.0) * 60
+        } else {
+            value(g[3]) * 60
+        }
+        val whole = kotlin.math.round(seconds).toInt()
+        if (whole in 1..MAX_TIMER_SECONDS) TextDuration(match.range, whole) else null
+    }.toList()
 
     /** A matched [ISO] duration as total minutes, seconds rounded to the nearest minute. */
     private fun totalMinutes(match: MatchResult): Int {

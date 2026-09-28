@@ -59,12 +59,15 @@ import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -99,6 +102,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalView
@@ -111,6 +115,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -168,6 +174,37 @@ fun RecipeDetailScreen(
     }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    // A time in a step ("10 Minuten") starts a countdown in the clock app. Named "Step 3 ·
+    // dish": the number is what the open recipe shows (the screen stays on while cooking),
+    // and it leads so a long dish name can't push it out of the clock's line.
+    val context = LocalContext.current
+    val timerSetFormat = stringResource(R.string.recipe_timer_set)
+    val timerLabelFormat = stringResource(R.string.recipe_timer_label)
+    val noTimerAppMessage = stringResource(R.string.recipe_timer_no_app)
+    val openClockLabel = stringResource(R.string.recipe_timer_open_clock)
+    val onStepTimer: (seconds: Int, step: Int, recipeName: String) -> Unit = { seconds, step, recipeName ->
+        scope.launch {
+            if (!startClockTimer(context, seconds, timerLabelFormat.format(step, recipeName))) {
+                snackbarHostState.showSnackbar(noTimerAppMessage)
+                return@launch
+            }
+            // Which step's timer this is, and one tap to the clock to stop or extend it.
+            // An action alone would keep the snackbar up for good, hence the duration.
+            val result = snackbarHostState.showSnackbar(
+                message = timerSetFormat.format(step, DurationFormat.toHuman("PT${seconds}S")),
+                actionLabel = openClockLabel,
+                duration = SnackbarDuration.Long,
+            )
+            if (result == SnackbarResult.ActionPerformed) showClockTimers(context)
+        }
+    }
+    // A timer of one's own choosing (the recipe gives no time, or you want another): the
+    // clock's own "new timer" screen, already named after the dish.
+    val onOwnTimer: () -> Unit = {
+        if (!startClockTimer(context, null, recipe?.recipe?.name.orEmpty())) {
+            scope.launch { snackbarHostState.showSnackbar(noTimerAppMessage) }
+        }
+    }
     val addedMessage = stringResource(R.string.shopping_added)
     val alreadyOnListMessage = stringResource(R.string.shopping_already_on_list)
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -307,8 +344,8 @@ fun RecipeDetailScreen(
                     ) {
                         // Quick actions sit above the steps (the cooking focus), reachable without
                         // scrolling through the ingredients on the left.
-                        ActionButtons(data, cooked, confirmsOtherDay, liked, onAddToShopping, onPlan, onToggleCooked, onToggleLiked)
-                        InstructionsSection(data)
+                        ActionButtons(data, cooked, confirmsOtherDay, liked, onAddToShopping, onPlan, onToggleCooked, onToggleLiked, onOwnTimer)
+                        InstructionsSection(data, onStepTimer)
                         NotesSection(data)
                         NutritionSection(data)
                     }
@@ -322,9 +359,9 @@ fun RecipeDetailScreen(
                     Text(data.recipe.name ?: "—", style = MaterialTheme.typography.headlineSmall)
                     RecipeMeta(data, cookedCount)
                     TagChips(data.recipe.tags)
-                    ActionButtons(data, cooked, confirmsOtherDay, liked, onAddToShopping, onPlan, onToggleCooked, onToggleLiked)
+                    ActionButtons(data, cooked, confirmsOtherDay, liked, onAddToShopping, onPlan, onToggleCooked, onToggleLiked, onOwnTimer)
                     IngredientsSection(data, targetServings, viewModel::setServings)
-                    InstructionsSection(data)
+                    InstructionsSection(data, onStepTimer)
                     NotesSection(data)
                     NutritionSection(data)
                 }
@@ -469,6 +506,7 @@ private fun ActionButtons(
     onPlan: () -> Unit,
     onToggleCooked: () -> Unit,
     onToggleLiked: () -> Unit,
+    onTimer: () -> Unit,
 ) {
     // Local spring-pop on the icon, fired from the tap (not the flow) and only when turning ON,
     // so it never plays on opening an already-liked/cooked recipe.
@@ -494,6 +532,11 @@ private fun ActionButtons(
         // Assign this recipe to a day in the current or next week.
         OutlinedIconButton(onClick = onPlan) {
             Icon(Icons.Outlined.CalendarMonth, contentDescription = stringResource(R.string.recipe_add_to_plan))
+        }
+        // A timer of your own — for when the recipe names no time, or you want another one.
+        // Cooking comes before "cooked": the actions lead, the two coloured states close the row.
+        OutlinedIconButton(onClick = onTimer) {
+            Icon(Icons.Outlined.Timer, contentDescription = stringResource(R.string.recipe_timer_own))
         }
         // Toggle "has been cooked" — green when confirmed (also shows as the image ribbon).
         val cookedIcon = @Composable {
@@ -572,13 +615,17 @@ private fun IngredientsSection(data: RecipeWithDetails, targetServings: Int?, on
 
 /** Numbered preparation steps, set in a comfortable cook-from-screen size. */
 @Composable
-private fun InstructionsSection(data: RecipeWithDetails) {
+private fun InstructionsSection(
+    data: RecipeWithDetails,
+    onTimer: (seconds: Int, step: Int, recipeName: String) -> Unit,
+) {
     if (data.instructions.isEmpty()) return
+    val recipeName = data.recipe.name.orEmpty()
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
         HorizontalDivider()
         Text(stringResource(R.string.review_instructions), style = MaterialTheme.typography.titleMedium)
         data.instructions.sortedBy { it.position }.forEachIndexed { i, step ->
-            Text("${i + 1}. ${step.text}", style = MaterialTheme.typography.bodyLarge)
+            StepText(number = i + 1, text = step.text) { seconds -> onTimer(seconds, i + 1, recipeName) }
         }
     }
 }
@@ -609,14 +656,101 @@ private fun NutritionSection(data: RecipeWithDetails) {
     }
 }
 
+/**
+ * The recipe's tags. A web import easily brings twenty ("30 minute dinners", "cheap pasta"…),
+ * which used to push the actions and the ingredients a screen down — so they start as two
+ * lines, and a text button (not a chip: it must not read as one more tag) shows the rest.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TagChips(tags: String?) {
     val list = tags?.split("\n")?.map { it.trim() }?.filter { it.isNotEmpty() }.orEmpty()
     if (list.isEmpty()) return
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        list.forEach { tag ->
-            AssistChip(onClick = {}, label = { Text(tag) })
+    var expanded by rememberSaveable(tags) { mutableStateOf(false) }
+    val tagChip: @Composable (String) -> Unit = { tag -> AssistChip(onClick = {}, label = { Text(tag) }) }
+    if (expanded) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.Center) {
+            list.forEach { tagChip(it) }
+            TagToggle(stringResource(R.string.recipe_tags_less), Icons.Outlined.ExpandLess) { expanded = false }
+        }
+    } else {
+        LimitedChips(
+            count = list.size,
+            maxLines = 2,
+            chip = { tagChip(list[it]) },
+            more = { hidden ->
+                TagToggle(stringResource(R.string.recipe_tags_more, hidden), Icons.Outlined.ExpandMore) { expanded = true }
+            },
+        )
+    }
+}
+
+/** "+45 more ▾" / "Less ▴" — a text button in the primary colour, so it reads as a control. */
+@Composable
+private fun TagToggle(label: String, icon: ImageVector, onClick: () -> Unit) {
+    TextButton(onClick = onClick) {
+        Text(label)
+        Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+    }
+}
+
+/**
+ * As many [chip]s as fit on [maxLines] lines, with [more] after them for the rest when some
+ * don't. (Compose's own FlowRow overflow does this but is deprecated and unmaintained.)
+ */
+@Composable
+private fun LimitedChips(
+    count: Int,
+    maxLines: Int,
+    chip: @Composable (Int) -> Unit,
+    more: @Composable (hidden: Int) -> Unit,
+) {
+    SubcomposeLayout { constraints ->
+        val gap = 8.dp.roundToPx()
+        val width = constraints.maxWidth
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val chips = (0 until count).map { i -> subcompose("chip$i") { chip(i) }.first().measure(loose) }
+        // Room for the widest "+N" there can be, so the chips never crowd it out.
+        val moreWidth = subcompose("probe") { more(count) }.first().measure(loose).width
+
+        // Lay the chips into lines; the last allowed line keeps room for the "more" button.
+        val lines = mutableListOf(mutableListOf<Int>())
+        var x = 0
+        var shown = 0
+        while (shown < count) {
+            val w = chips[shown].width
+            val lastLine = lines.size == maxLines
+            val reserve = if (lastLine && shown < count - 1) gap + moreWidth else 0
+            if (lines.last().isNotEmpty() && x + w + reserve > width) {
+                if (lastLine) break
+                lines += mutableListOf<Int>()
+                x = 0
+                continue
+            }
+            lines.last() += shown
+            x += w + gap
+            shown++
+        }
+        val morePlaceable = if (shown < count) subcompose("more") { more(count - shown) }.first().measure(loose) else null
+
+        val lineHeights = lines.mapIndexed { i, line ->
+            val chipsHeight = line.maxOfOrNull { chips[it].height } ?: 0
+            if (i == lines.lastIndex && morePlaceable != null) maxOf(chipsHeight, morePlaceable.height) else chipsHeight
+        }
+        layout(width, lineHeights.sum()) {
+            var y = 0
+            lines.forEachIndexed { i, line ->
+                var px = 0
+                line.forEach { idx ->
+                    val p = chips[idx]
+                    p.placeRelative(px, y + (lineHeights[i] - p.height) / 2)
+                    px += p.width + gap
+                }
+                if (i == lines.lastIndex && morePlaceable != null) {
+                    morePlaceable.placeRelative(px, y + (lineHeights[i] - morePlaceable.height) / 2)
+                }
+                y += lineHeights[i]
+            }
         }
     }
 }

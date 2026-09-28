@@ -125,4 +125,44 @@ class DurationFormatTest {
         assertEquals("PT25M", DurationFormat.toIso(DurationFormat.toHuman("PT25M")))
         assertEquals("PT70M", DurationFormat.toIso(DurationFormat.toHuman("PT1H10M")))
     }
+
+    // --- Cooking times inside a recipe step (the detail screen's timer links) -------------
+
+    private fun found(text: String) = DurationFormat.findIn(text).map { text.substring(it.range) to it.seconds }
+
+    @Test
+    fun findsMinutesAndHoursInAStep() {
+        assertEquals(listOf("10 Minuten" to 600), found("Nudeln 10 Minuten kochen."))
+        assertEquals(listOf("2 hours" to 7200), found("Simmer for 2 hours, stirring."))
+    }
+
+    @Test
+    fun hoursAndMinutesAreOneTimer() {
+        assertEquals(listOf("1 Std. 30 Min" to 5400), found("1 Std. 30 Min. köcheln lassen."))
+    }
+
+    @Test
+    fun severalTimesInOneStepAreSeparate() {
+        assertEquals(
+            listOf("5 min" to 300, "20 min" to 1200),
+            found("Zwiebeln 5 min anbraten, dann 20 min schmoren."),
+        )
+    }
+
+    @Test
+    fun aRangeStartsAtItsFirstValue() {
+        assertEquals(listOf("10–12 Minuten" to 600), found("10–12 Minuten backen."))
+    }
+
+    @Test
+    fun aDecimalIsTakenWhole() {
+        assertEquals(listOf("1,5 Stunden" to 5400), found("1,5 Stunden ruhen lassen."))
+    }
+
+    @Test
+    fun unitsInsideOtherWordsAreNoTime() {
+        // "ml" starts with m, "Hähnchen" with h — neither is a minute or an hour.
+        assertEquals(emptyList<Pair<String, Int>>(), found("200 ml Milch und 4 Hähnchenschenkel"))
+        assertEquals(emptyList<Pair<String, Int>>(), found("Bei 180 Grad backen."))
+    }
 }

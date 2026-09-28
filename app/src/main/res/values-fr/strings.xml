@@ -220,6 +220,13 @@
     <string name="recipe_plan_replace_text">“%2$s” est déjà prévu pour %1$s. Le remplacer par cette recette ?</string>
     <string name="recipe_plan_replace_confirm">Remplacer</string>
     <string name="recipe_plan_add_also">Ajouter aussi</string>
+    <string name="recipe_timer_set">Étape %1$d : nouveau minuteur de %2$s lancé</string>
+    <string name="recipe_timer_own">Régler un minuteur</string>
+    <string name="recipe_tags_less">Moins</string>
+    <string name="recipe_tags_more">+%1$d de plus</string>
+    <string name="recipe_timer_label">Étape %1$d · %2$s</string>
+    <string name="recipe_timer_open_clock">Ouvrir l\'horloge</string>
+    <string name="recipe_timer_no_app">Aucune application Horloge avec minuteur trouvée</string>
     <string name="recipe_plan_day_free">Libre</string>
     <string name="wizard_step_of">Étape %1$d sur %2$d</string>
     <string name="wizard_back">Retour</string>

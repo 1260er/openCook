@@ -216,6 +216,13 @@
     <string name="recipe_plan_replace_text">Am %1$s ist bereits „%2$s" geplant. Soll dieses Rezept ersetzt werden?</string>
     <string name="recipe_plan_replace_confirm">Ersetzen</string>
     <string name="recipe_plan_add_also">Dazu planen</string>
+    <string name="recipe_timer_set">Schritt %1$d: neuer Timer für %2$s gestartet</string>
+    <string name="recipe_timer_own">Timer stellen</string>
+    <string name="recipe_tags_less">Weniger</string>
+    <string name="recipe_tags_more">+%1$d weitere</string>
+    <string name="recipe_timer_label">Schritt %1$d · %2$s</string>
+    <string name="recipe_timer_open_clock">Uhr öffnen</string>
+    <string name="recipe_timer_no_app">Keine Uhr-App mit Timer gefunden</string>
     <string name="recipe_plan_day_free">Frei</string>
     <string name="wizard_step_of">Schritt %1$d von %2$d</string>
     <string name="wizard_back">Zurück</string>
