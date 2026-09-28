@@ -131,7 +131,7 @@ private class EditorAdapter<T>(
 
     private fun syncVisiblePositions(recyclerView: RecyclerView) {
         for (i in 0 until recyclerView.childCount) {
-            val holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i)) as Holder
+            val holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i)) as EditorAdapter<T>.Holder
             holder.position = holder.bindingAdapterPosition
         }
     }
