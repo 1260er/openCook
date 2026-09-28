@@ -73,3 +73,18 @@ def test_openrouter_auth_error_is_not_retried(monkeypatch):
     with pytest.raises(httpx.HTTPStatusError):
         asyncio.run(OpenRouterClient().generate("prompt", b"image"))
     assert len(attempts) == 1
+
+
+def test_missing_model_endpoint_names_model_without_exposing_key(monkeypatch):
+    settings = Settings(ai_provider="openrouter", openrouter_api_key="private-key",
+                        openrouter_model="example/retired-vision", _env_file=None)
+    monkeypatch.setattr("app.openrouter_client.get_settings", lambda: settings)
+    real_client = httpx.AsyncClient
+    monkeypatch.setattr("app.openrouter_client.httpx.AsyncClient", lambda **kwargs: real_client(
+        transport=httpx.MockTransport(lambda _: httpx.Response(
+            404, json={"error": {"message": "No endpoints found"}}
+        )), **kwargs
+    ))
+    with pytest.raises(RuntimeError, match="example/retired-vision") as exc:
+        asyncio.run(OpenRouterClient().generate("prompt", b"image"))
+    assert "private-key" not in str(exc.value)
