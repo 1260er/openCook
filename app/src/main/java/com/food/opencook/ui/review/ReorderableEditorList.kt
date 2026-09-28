@@ -64,10 +64,10 @@ private class EditorAdapter<T>(
     private var to = RecyclerView.NO_POSITION
 
     inner class Holder(val composeView: ComposeView) : RecyclerView.ViewHolder(composeView) {
-        var position by mutableIntStateOf(RecyclerView.NO_POSITION)
+        var displayIndex by mutableIntStateOf(RecyclerView.NO_POSITION)
         init {
             composeView.setContent {
-                val index = position
+                val index = displayIndex
                 if (index in rows.indices) {
                     wrapTheme { card(rows[index], index) { startDrag(this@Holder) } }
                 }
@@ -132,7 +132,7 @@ private class EditorAdapter<T>(
     private fun syncVisiblePositions(recyclerView: RecyclerView) {
         for (i in 0 until recyclerView.childCount) {
             val holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i)) as EditorAdapter<T>.Holder
-            holder.position = holder.bindingAdapterPosition
+            holder.displayIndex = holder.bindingAdapterPosition
         }
     }
 
@@ -146,6 +146,6 @@ private class EditorAdapter<T>(
         })
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.position = position
+        holder.displayIndex = position
     }
 }
