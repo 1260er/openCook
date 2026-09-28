@@ -105,6 +105,7 @@ import coil3.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
@@ -116,18 +117,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
-import android.content.ClipData
-import android.content.ClipDescription
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.draganddrop.dragAndDropSource
-import androidx.compose.foundation.draganddrop.dragAndDropTarget
-import androidx.compose.ui.draganddrop.DragAndDropEvent
-import androidx.compose.ui.draganddrop.DragAndDropTarget
-import androidx.compose.ui.draganddrop.DragAndDropTransferData
-import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.positionInRoot
 import com.food.opencook.R
 import com.food.opencook.util.MealTypes
 import com.food.opencook.util.RecipeCategories
@@ -943,21 +935,15 @@ fun SummaryStep(
 /* Reordering ingredients / steps                                             */
 /* ------------------------------------------------------------------------- */
 
-// Same mechanics as the shopping list's drag-to-recategorize and the meal planner's
-// drag-to-reschedule: a long press lifts a card as a platform drag source, the list is
-// the single drop target (with edge auto-scroll), and the card under the finger is lit.
+// Long-press sorting stays in this Compose list's pointer stream. The list scrolls while
+// the finger stays near an edge and continuously marks the card below that finger.
 
-private const val REORDER_LABEL = "opencook-reorder"
 private const val FRAME_60HZ_NANOS = 1_000_000_000f / 60f
-
-// Deliberately not text/plain: the cards are mostly text fields, and a text field accepts
-// dropped text — it would take over the drag under the finger (no highlight, no edge
-// auto-scroll) and could even paste the payload into itself.
-private const val REORDER_MIME = "application/x-opencook-reorder"
 
 private class ListReorder {
     /** Card bounds in root coordinates, by list position. */
     val rows = HashMap<Int, Rect>()
+    val rowOrigins = HashMap<Int, Float>()
     var bounds = Rect.Zero
     var dragged by mutableIntStateOf(-1)
     var hovered by mutableIntStateOf(-1)
@@ -1031,52 +1017,23 @@ private fun rememberListReorder(scroll: ScrollState, onMove: (from: Int, to: Int
 
 @Composable
 private fun Modifier.reorderTarget(reorder: ListReorder): Modifier {
-    val target = remember(reorder) {
-        object : DragAndDropTarget {
-            override fun onEntered(event: DragAndDropEvent) = onMoved(event)
-            override fun onMoved(event: DragAndDropEvent) {
-                val e = event.toAndroidDragEvent()
-                reorder.pointerY = e.y
-                reorder.hovered = reorder.rowAt(e.y)
-            }
-            override fun onDrop(event: DragAndDropEvent): Boolean {
-                val from = reorder.dragged
-                val to = reorder.rowAt(event.toAndroidDragEvent().y)
-                reorder.reset()
-                if (from < 0 || to < 0 || from == to) return false
-                reorder.onMove(from, to)
-                return true
-            }
-            override fun onExited(event: DragAndDropEvent) {
-                reorder.pointerY = Float.NaN
-                reorder.hovered = -1
-            }
-            override fun onEnded(event: DragAndDropEvent) = reorder.reset()
-        }
-    }
-    return this
-        .onGloballyPositioned { reorder.bounds = it.boundsInRoot() }
-        .dragAndDropTarget(
-            shouldStartDragAndDrop = { it.toAndroidDragEvent().clipDescription?.hasMimeType(REORDER_MIME) == true },
-            target = target,
-        )
+    return onGloballyPositioned { reorder.bounds = it.boundsInRoot() }
 }
 
 /**
- * A long press on the card's free area lifts it. Block-based dragAndDropSource is deprecated
- * but is the only variant that triggers on a real long-press — same as the shopping list.
- * TalkBack users get "move up"/"move down" actions instead.
+ * Keep the drag in this list's pointer stream. A platform drag may leave the drop target
+ * while the list moves underneath it, interrupting both the highlight and edge scrolling.
+ * TalkBack users can still move cards via custom accessibility actions.
  */
-@Suppress("DEPRECATION")
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Modifier.reorderSource(reorder: ListReorder, i: Int, size: Int): Modifier {
     val moveUp = stringResource(R.string.wizard_step_move_up)
     val moveDown = stringResource(R.string.wizard_step_move_down)
-    // Captured here because the drag-shadow lambda below runs in DrawScope (no theme access).
-    val shadowColor = MaterialTheme.colorScheme.surfaceContainerHighest
     return this
-        .onGloballyPositioned { reorder.rows[i] = it.boundsInRoot() }
+        .onGloballyPositioned {
+            reorder.rows[i] = it.boundsInRoot()
+            reorder.rowOrigins[i] = it.positionInRoot().y
+        }
         // The lifted card stays in the list, faded, so its old slot remains readable.
         .alpha(if (reorder.dragged == i) 0.4f else 1f)
         .semantics {
@@ -1085,28 +1042,30 @@ private fun Modifier.reorderSource(reorder: ListReorder, i: Int, size: Int): Mod
                 if (i < size - 1) add(CustomAccessibilityAction(moveDown) { reorder.onMove(i, i + 1); true })
             }
         }
-        .dragAndDropSource(
-            drawDragDecoration = {
-                drawRoundRect(color = shadowColor, cornerRadius = CornerRadius(12.dp.toPx()))
-            },
-            block = {
-                awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
-                    if (reorder.fieldTouched) {
-                        reorder.fieldTouched = false
-                        return@awaitEachGesture
+        .pointerInput(reorder, i) {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                val startedOnField = reorder.fieldTouched
+                reorder.fieldTouched = false
+                if (startedOnField) return@awaitEachGesture
+                val longPress = awaitLongPressOrCancellation(down.id) ?: return@awaitEachGesture
+                reorder.dragged = i
+                reorder.size = size
+                reorder.pointerY = (reorder.rowOrigins[i] ?: 0f) + longPress.position.y
+                reorder.hovered = reorder.rowAt(reorder.pointerY)
+                try {
+                    val completed = drag(longPress.id) { change ->
+                        reorder.pointerY = (reorder.rowOrigins[i] ?: 0f) + change.position.y
+                        reorder.hovered = reorder.rowAt(reorder.pointerY)
+                        change.consume()
                     }
-                    awaitLongPressOrCancellation(down.id) ?: return@awaitEachGesture
-                    reorder.dragged = i
-                    reorder.size = size
-                    startTransfer(
-                        DragAndDropTransferData(
-                            ClipData(ClipDescription(REORDER_LABEL, arrayOf(REORDER_MIME)), ClipData.Item(i.toString())),
-                        ),
-                    )
+                    val to = reorder.rowAt(reorder.pointerY)
+                    if (completed && to >= 0 && to != i) reorder.onMove(i, to)
+                } finally {
+                    reorder.reset()
                 }
-            },
-        )
+            }
+        }
 }
 
 /**
@@ -1131,10 +1090,8 @@ private fun StepScroll(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    // [modifier] goes on a non-scrolling box around the scrolling column, not on the column
-    // itself: Compose hit-tests a drop target by its layout node's inner coordinates, which
-    // on the column would move with the scroll — after scrolling N px the list's drop target
-    // would "end" N px too high, and a drag held at the bottom edge would drop out of it.
+    // Measure the stationary viewport separately from the scrolling cards, so edge scrolling
+    // always uses the visible bounds even after the column has moved.
     Box(modifier.fillMaxSize()) {
         Column(
             Modifier
