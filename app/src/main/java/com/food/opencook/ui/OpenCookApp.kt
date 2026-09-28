@@ -79,7 +79,6 @@ import com.food.opencook.ui.recipes.RecipeDetailScreen
 import com.food.opencook.ui.recipes.RecipesScreen
 import com.food.opencook.ui.retrospect.RetrospectScreen
 import com.food.opencook.ui.review.ReviewScreen
-import com.food.opencook.ui.scan.ScanScreen
 import com.food.opencook.ui.settings.AboutScreen
 import com.food.opencook.ui.settings.AppearanceSettingsScreen
 import com.food.opencook.ui.settings.HouseholdSettingsScreen
@@ -275,7 +274,10 @@ private fun AppNavHost(
         composable(TopLevelDestination.RECIPES.route) {
             RecipesScreen(
                 onRecipeClick = { navController.navigate(Routes.recipeDetail(it)) },
-                onAddRecipe = { navController.navigate(Routes.SCAN) },
+                onOpenCamera = { navController.navigate(Routes.CAMERA) },
+                onCreateManually = { navController.navigate(Routes.reviewNew()) },
+                onDiscover = { navController.navigate(Routes.DISCOVER) },
+                onOpenSettings = { navigateToTab(TopLevelDestination.SETTINGS.route) },
             )
         }
         composable(TopLevelDestination.PLAN.route) {
@@ -333,16 +335,6 @@ private fun AppNavHost(
             MealPlanPickScreen(
                 date = entry.arguments?.getString(Routes.ARG_DATE).orEmpty(),
                 slot = entry.arguments?.getString(Routes.ARG_SLOT).orEmpty(),
-                onBack = { navController.popBackStack() },
-            )
-        }
-
-        composable(Routes.SCAN) {
-            ScanScreen(
-                onNavigateToCamera = { navController.navigate(Routes.CAMERA) },
-                onNavigateToSettings = { navigateToTab(TopLevelDestination.SETTINGS.route) },
-                onCreateManually = { navController.navigate(Routes.reviewNew()) },
-                onDiscover = { navController.navigate(Routes.DISCOVER) },
                 onBack = { navController.popBackStack() },
             )
         }

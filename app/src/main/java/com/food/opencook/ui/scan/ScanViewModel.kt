@@ -78,9 +78,6 @@ class ScanViewModel @Inject constructor(
         }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ScanUiState())
 
-    /** Re-probe the server after the user tapped "try again" on the offline hint. */
-    fun retryServerCheck() = syncManager.syncNow()
-
     fun newCaptureFile(): File = imageStore.newCaptureFile()
 
     /** Register & schedule a scan for an already-saved local file, then report its job id. */

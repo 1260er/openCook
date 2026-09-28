@@ -25,8 +25,6 @@ import android.net.Uri
  * [TopLevelDestination]s. The bottom bar is hidden while these are shown.
  */
 object Routes {
-    /** Add-a-recipe entry (take photo / pick gallery) — reached contextually, not a tab. */
-    const val SCAN = "scan"
     const val CAMERA = "camera"
 
     /** Camera opened from the review screen; returns the captured path to it. */
@@ -93,7 +91,7 @@ object Routes {
 
     /** Routes that should hide the bottom navigation bar (focused full-screen flow). */
     val fullScreenRoutes = setOf(
-        SCAN, CAMERA, REVIEW_CAMERA, REVIEW, RECIPE_DETAIL, EDIT, BARCODE_SCAN, PLAN_PICK,
+        CAMERA, REVIEW_CAMERA, REVIEW, RECIPE_DETAIL, EDIT, BARCODE_SCAN, PLAN_PICK,
         BACKUP, RETROSPECT, DISCOVER, DISCOVER_WEB,
         SETTINGS_HOUSEHOLD, SETTINGS_SYNC, SETTINGS_APPEARANCE, SETTINGS_ABOUT,
     )

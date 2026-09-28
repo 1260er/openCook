@@ -38,22 +38,13 @@
     <string name="settings_save">Speichern</string>
 
     <!-- Scan -->
-    <string name="scan_title">Rezept hinzufügen</string>
-    <string name="scan_intro">Fotografiere eine Kochbuchseite, hol dir eines aus dem Netz oder schreib es selbst auf.</string>
     <string name="scan_take_photo">Foto aufnehmen</string>
     <string name="scan_pick_gallery">Aus Galerie wählen</string>
     <string name="scan_no_server_title">Foto-Erkennung braucht einen Server</string>
     <string name="scan_no_server">Die KI läuft auf deinem openCook-Server. Ohne Server kannst du Rezepte weiterhin manuell anlegen oder aus einer Datei importieren.</string>
+    <string name="scan_tile_needs_server">Braucht Server</string>
+    <string name="scan_tile_later">Wird später erkannt</string>
     <string name="scan_go_to_settings">Zu den Einstellungen</string>
-    <string name="scan_server_offline_title">Server gerade nicht erreichbar</string>
-    <string name="scan_off_home_network_title">Nicht im Heimnetz</string>
-    <string name="scan_server_offline">Du kannst trotzdem fotografieren — die Fotos bleiben auf dem Handy und werden automatisch erkannt, sobald der Server wieder antwortet.</string>
-    <string name="scan_off_home_network">Die Erkennung läuft auf deinem Heimserver, der nur im WLAN (oder per VPN) erreichbar ist. Fotografiere trotzdem — die Fotos bleiben auf dem Handy und werden erkannt, sobald du wieder zu Hause bist.</string>
-    <plurals name="scan_server_offline_queued">
-        <item quantity="one">%d Scan wartet.</item>
-        <item quantity="other">%d Scans warten.</item>
-    </plurals>
-    <string name="scan_server_retry">Erneut prüfen</string>
 
     <!-- Camera -->
     <string name="camera_capture">Aufnehmen</string>
@@ -371,8 +362,8 @@
     <!-- Admin area (server backup/restore) -->
 
     <!-- Recipe JSON import (button on the add-recipe screen) -->
-    <string name="import_from_file">Aus JSON-Datei importieren</string>
-    <string name="import_running">Importiere… %1$d / %2$d</string>
+    <string name="import_from_file">Aus Datei importieren</string>
+    <string name="import_running">Rezepte werden importiert…</string>
     <string name="import_done">%1$d importiert, %2$d übersprungen</string>
     <string name="import_error">Import fehlgeschlagen: %1$s</string>
     <string name="import_read_failed">Datei konnte nicht gelesen werden</string>

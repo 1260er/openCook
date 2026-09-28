@@ -39,22 +39,13 @@
     <string name="settings_save">Save</string>
 
     <!-- Scan -->
-    <string name="scan_title">Add recipe</string>
-    <string name="scan_intro">Photograph a cookbook page, fetch one from the web, or write it down yourself.</string>
     <string name="scan_take_photo">Take photo</string>
     <string name="scan_pick_gallery">Choose from gallery</string>
     <string name="scan_no_server_title">Photo recognition needs a server</string>
     <string name="scan_no_server">The AI runs on your openCook server. Without one you can still add recipes by hand or import them from a file.</string>
+    <string name="scan_tile_needs_server">Needs a server</string>
+    <string name="scan_tile_later">Recognised later</string>
     <string name="scan_go_to_settings">Go to settings</string>
-    <string name="scan_server_offline_title">Server not reachable right now</string>
-    <string name="scan_off_home_network_title">Not on your home network</string>
-    <string name="scan_server_offline">You can still take photos — they stay on the phone and are recognized automatically as soon as the server answers again.</string>
-    <string name="scan_off_home_network">Recognition runs on your home server, which is only reachable on your Wi-Fi (or via VPN). Take photos anyway — they stay on the phone and are recognized once you\'re back.</string>
-    <plurals name="scan_server_offline_queued">
-        <item quantity="one">%d scan is waiting.</item>
-        <item quantity="other">%d scans are waiting.</item>
-    </plurals>
-    <string name="scan_server_retry">Check again</string>
 
     <!-- Camera -->
     <string name="camera_capture">Capture</string>
@@ -369,8 +360,8 @@
     <!-- Admin area (server backup/restore) -->
 
     <!-- Recipe JSON import (button on the add-recipe screen) -->
-    <string name="import_from_file">Import from JSON file</string>
-    <string name="import_running">Importing… %1$d / %2$d</string>
+    <string name="import_from_file">Import from file</string>
+    <string name="import_running">Importing recipes…</string>
     <string name="import_done">%1$d imported, %2$d skipped</string>
     <string name="import_error">Import failed: %1$s</string>
     <string name="import_read_failed">Could not read the file</string>

@@ -39,23 +39,13 @@
     <string name="settings_save">Enregistrer</string>
 
     <!-- Scan -->
-    <string name="scan_title">Ajouter une recette</string>
-    <string name="scan_intro">Photographiez une page de livre de cuisine, récupérez-en une sur le Web ou saisissez-la vous-même.</string>
     <string name="scan_take_photo">Prendre une photo</string>
     <string name="scan_pick_gallery">Choisir dans la galerie</string>
     <string name="scan_no_server_title">La reconnaissance photo nécessite un serveur</string>
     <string name="scan_no_server">L\'IA tourne sur votre serveur openCook. Sans serveur, vous pouvez toujours ajouter des recettes à la main ou les importer depuis un fichier.</string>
+    <string name="scan_tile_needs_server">Nécessite un serveur</string>
+    <string name="scan_tile_later">Analysée plus tard</string>
     <string name="scan_go_to_settings">Aller aux paramètres</string>
-    <string name="scan_server_offline_title">Serveur actuellement injoignable</string>
-    <string name="scan_off_home_network_title">Hors du réseau domestique</string>
-    <string name="scan_server_offline">Vous pouvez continuer à prendre des photos — elles restent sur le téléphone et sont reconnues automatiquement dès que le serveur répond à nouveau.</string>
-    <string name="scan_off_home_network">La reconnaissance tourne sur votre serveur domestique, joignable uniquement sur votre Wi-Fi (ou via VPN). Prenez quand même des photos — elles restent sur le téléphone et seront reconnues dès votre retour.</string>
-    <plurals name="scan_server_offline_queued">
-        <item quantity="one">%d analyse est en attente.</item>
-        <item quantity="other">%d analyses sont en attente.</item>
-        <item quantity="many">%d d\'analyses sont en attente.</item>
-    </plurals>
-    <string name="scan_server_retry">Vérifier à nouveau</string>
 
     <!-- Camera -->
     <string name="camera_capture">Prendre la photo</string>
@@ -376,8 +366,8 @@
     <!-- Admin area (server backup/restore) -->
 
     <!-- Recipe JSON import (button on the add-recipe screen) -->
-    <string name="import_from_file">Importer depuis un fichier JSON</string>
-    <string name="import_running">Import… %1$d / %2$d</string>
+    <string name="import_from_file">Importer depuis un fichier</string>
+    <string name="import_running">Importation des recettes…</string>
     <string name="import_done">%1$d importées, %2$d ignorées</string>
     <string name="import_error">Échec de l\'import : %1$s</string>
     <string name="import_read_failed">Impossible de lire le fichier</string>

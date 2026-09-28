@@ -108,6 +108,7 @@ import com.food.opencook.ui.components.EmptyState
 import com.food.opencook.ui.components.RecipeCard
 import com.food.opencook.ui.review.CategoryChips
 import com.food.opencook.ui.review.MealTypeChips
+import com.food.opencook.ui.scan.AddRecipeSheet
 import com.food.opencook.ui.theme.Spacing
 import com.food.opencook.util.CookedFilter
 import com.food.opencook.util.MealTypes
@@ -117,7 +118,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun RecipesScreen(
     onRecipeClick: (String) -> Unit,
-    onAddRecipe: () -> Unit = {},
+    onOpenCamera: () -> Unit = {},
+    onCreateManually: () -> Unit = {},
+    onDiscover: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     viewModel: RecipesViewModel = hiltViewModel(),
 ) {
     val recipes by viewModel.recipes.collectAsStateWithLifecycle()
@@ -144,6 +148,8 @@ fun RecipesScreen(
     val selecting = selection.isNotEmpty()
     var confirmDelete by remember { mutableStateOf(false) }
     var bulkEditing by remember { mutableStateOf(false) }
+    var addingRecipe by remember { mutableStateOf(false) }
+    val onAddRecipe = { addingRecipe = true }
     val snackbarHostState = LocalSnackbarHostState.current
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -304,6 +310,15 @@ fun RecipesScreen(
         }
     }
     }
+
+    AddRecipeSheet(
+        show = addingRecipe,
+        onDismiss = { addingRecipe = false },
+        onOpenCamera = onOpenCamera,
+        onCreateManually = onCreateManually,
+        onDiscover = onDiscover,
+        onOpenSettings = onOpenSettings,
+    )
 
     if (bulkEditing) {
         val picked = remember { viewModel.selectedRecipes() }
