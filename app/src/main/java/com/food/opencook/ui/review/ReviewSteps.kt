@@ -413,14 +413,17 @@ fun IngredientsStep(
                 )
             }
         }
-        Spacer(Modifier.height(Spacing.sm))
-        FilledTonalButton(
-            onClick = { viewModel.addIngredient(index) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Icon(Icons.Outlined.Add, contentDescription = null)
-            Spacer(Modifier.width(Spacing.xs))
-            Text(stringResource(R.string.review_add_ingredient))
+        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
+            HorizontalDivider()
+            Spacer(Modifier.height(Spacing.sm))
+            FilledTonalButton(
+                onClick = { viewModel.addIngredient(index) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Outlined.Add, contentDescription = null)
+                Spacer(Modifier.width(Spacing.xs))
+                Text(stringResource(R.string.review_add_ingredient))
+            }
         }
     }
 }
@@ -438,9 +441,8 @@ private fun IngredientCard(
         modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        // Delete sits on the right, vertically centred — the same spot as on a step card.
+        // The two controls share the right edge without narrowing the ingredient fields.
         Row(Modifier.padding(Spacing.md), verticalAlignment = Alignment.CenterVertically) {
-            DragHandle(startDrag)
             Column(Modifier.weight(1f)) {
                 OutlinedTextField(
                     value = ingredient.name,
@@ -483,9 +485,15 @@ private fun IngredientCard(
                     )
                 }
             }
-            Spacer(Modifier.width(Spacing.xs))
-            IconButton(onClick = onRemove) {
-                Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.review_remove))
+            Column(
+                modifier = Modifier.height(120.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                DragHandle(startDrag)
+                IconButton(onClick = onRemove) {
+                    Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.review_remove))
+                }
             }
         }
     }
@@ -524,14 +532,17 @@ fun StepsStep(
                 )
             }
         }
-        Spacer(Modifier.height(Spacing.sm))
-        FilledTonalButton(
-            onClick = { viewModel.addStep(index) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Icon(Icons.Outlined.Add, contentDescription = null)
-            Spacer(Modifier.width(Spacing.xs))
-            Text(stringResource(R.string.review_add_step))
+        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
+            HorizontalDivider()
+            Spacer(Modifier.height(Spacing.sm))
+            FilledTonalButton(
+                onClick = { viewModel.addStep(index) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Outlined.Add, contentDescription = null)
+                Spacer(Modifier.width(Spacing.xs))
+                Text(stringResource(R.string.review_add_step))
+            }
         }
     }
 }
@@ -549,9 +560,8 @@ private fun StepCard(
         modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        // Number and delete vertically centred, delete in the same spot as on an ingredient card.
+        // Drag and delete share the right edge, with the step number still at the left.
         Row(Modifier.padding(Spacing.md), verticalAlignment = Alignment.CenterVertically) {
-            DragHandle(startDrag)
             Box(
                 Modifier
                     .size(36.dp)
@@ -572,9 +582,15 @@ private fun StepCard(
                 modifier = Modifier.weight(1f),
                 minLines = 2,
             )
-            Spacer(Modifier.width(Spacing.xs))
-            IconButton(onClick = onRemove) {
-                Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.review_remove))
+            Column(
+                modifier = Modifier.height(120.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                DragHandle(startDrag)
+                IconButton(onClick = onRemove) {
+                    Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.review_remove))
+                }
             }
         }
     }
