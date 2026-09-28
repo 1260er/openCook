@@ -15,6 +15,7 @@ from app.extraction import (
     _iso_duration,
     _normalize_category,
     _normalize_meal_types,
+    _parse_boxes,
     load_i18n,
     parse_json_lenient,
     to_schema_org,
@@ -217,6 +218,14 @@ def test_assign_boxes_no_duplicate_box():
     assigned = _assign_boxes(recipes, boxes)
     assert len(assigned) == 1
     assert 0 in assigned and 1 not in assigned
+
+
+def test_finished_photo_wins_over_preparation_photo_for_same_recipe():
+    raw = ('{"dish_photos":['
+           '{"recipe_title":"Marinade Variante 1","kind":"preparation","box":[0,0,40,40]},'
+           '{"recipe_title":"Marinade","kind":"finished","box":[50,50,90,90]}]}')
+    boxes = _parse_boxes(raw, (100, 100))
+    assert _assign_boxes(["Marinade Variante 1"], boxes)[0].coords == (50, 50, 90, 90)
 
 
 def test_to_schema_org_maps_fields():
