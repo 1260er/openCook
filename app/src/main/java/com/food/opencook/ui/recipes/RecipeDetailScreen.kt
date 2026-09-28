@@ -455,12 +455,13 @@ private fun ExportRow(
 /** The dish image (or a warm placeholder) with the liked/cooked status badges. */
 @Composable
 private fun ImageHeader(model: Any?, liked: Boolean, cooked: Boolean, modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(12.dp))) {
+    Box(modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(12.dp))
+        .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
         if (model != null) {
             AsyncImage(
                 model = model,
                 contentDescription = null,
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
