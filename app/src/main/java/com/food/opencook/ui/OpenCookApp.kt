@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -193,6 +194,10 @@ private fun MainScaffold() {
                 val result = snackbarHostState.showSnackbar(
                     message = shareSavedMsg.orEmpty(),
                     actionLabel = shareViewLabel,
+                    // An action label alone makes the snackbar Indefinite — it would sit
+                    // there until the recipe was opened. Let it time out instead.
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Long,
                 )
                 if (result == SnackbarResult.ActionPerformed) {
                     navController.navigate(Routes.recipeDetail(s.recipeId))

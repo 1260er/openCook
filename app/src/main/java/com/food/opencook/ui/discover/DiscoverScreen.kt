@@ -43,6 +43,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -158,6 +159,9 @@ fun DiscoverScreen(
             val result = snackbarHostState.showSnackbar(
                 message = removedMessage.format(site.label),
                 actionLabel = undoLabel,
+                // Without an explicit duration an action label makes it Indefinite.
+                withDismissAction = true,
+                duration = SnackbarDuration.Long,
             )
             if (result == SnackbarResult.ActionPerformed) viewModel.add(site.url)
         }
