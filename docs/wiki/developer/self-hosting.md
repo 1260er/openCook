@@ -33,13 +33,13 @@ To extract photos through a hosted vision model, create `server/.env` (do not co
 ```dotenv
 OPENCOOK_AI_PROVIDER=openrouter
 OPENCOOK_OPENROUTER_API_KEY=<your OpenRouter API key>
-OPENCOOK_OPENROUTER_MODEL=qwen/qwen-2.5-vl-7b-instruct
+OPENCOOK_OPENROUTER_MODEL=qwen/qwen3.8-27b
 ```
 
 Then run `docker compose up -d --build` from `server/`. Ollama is not required in this mode.
 The key and model are both required. The model shown is an example that accepts images; check
-the current model availability and price before selecting one. Each photo is sent to OpenRouter
-and the selected model provider twice (text extraction and dish-photo detection), so API charges
+that it still has active endpoints and review its price before selecting one. Each photo is sent
+to OpenRouter and the selected model provider twice (text extraction and dish-photo detection), so API charges
 and the provider's data handling apply. The server still needs a trusted LAN/VPN: OpenRouter does
 not add authentication to openCook's API. Remove these variables or set
 `OPENCOOK_AI_PROVIDER=ollama` to return to local extraction.
