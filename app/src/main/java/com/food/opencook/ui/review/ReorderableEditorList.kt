@@ -91,6 +91,7 @@ private class EditorAdapter<T>(
             rows.add(new, rows.removeAt(old))
             notifyItemMoved(old, new)
             to = new
+            syncVisiblePositions(recyclerView)
             recyclerView.post { syncVisiblePositions(recyclerView) }
             return true
         }
