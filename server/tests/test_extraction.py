@@ -78,9 +78,12 @@ def test_load_i18n_unknown_language_falls_back_to_english():
 
 def test_photo_prompts_accept_relevant_preparation_photos():
     for lang in ("en", "de", "fr"):
-        prompt = load_i18n(lang).box_prompt.lower()
+        i18n = load_i18n(lang)
+        prompt = i18n.box_prompt.lower()
         assert "dish_photos" in prompt
         assert "grill" in prompt
+        assert '"shared"' in prompt
+        assert "variant" in i18n.text_prompt.lower()
 
 
 def test_every_catalog_carries_its_category_and_meal_aliases():
@@ -228,6 +231,14 @@ def test_finished_photo_wins_over_preparation_photo_for_same_recipe():
     assert _assign_boxes(["Marinade Variante 1"], boxes)[0].coords == (50, 50, 90, 90)
 
 
+def test_explicit_shared_photo_goes_to_both_variants_only():
+    titles = ["Grillmarinade Variante 1", "Grillmarinade Variante 2", "Apfelkuchen"]
+    common = _Box("Grillmarinade", (5, 5, 50, 50), shared=True)
+    assigned = _assign_boxes(titles, [common])
+    assert assigned == {0: common, 1: common}
+    assert len(_assign_boxes(titles, [_Box("Grillmarinade", (5, 5, 50, 50))])) == 1
+
+
 def test_to_schema_org_maps_fields():
     recipe = {
         "title": "X",
@@ -292,3 +303,24 @@ def test_extractor_end_to_end(tmp_path):
     # A dish crop was matched, written to disk and referenced on the recipe.
     assert recipes[0]["image"]
     assert (images_dir / recipes[0]["image"][0]).exists()
+
+
+def test_extractor_reuses_shared_crop_for_two_variants(tmp_path):
+    page = tmp_path / "page.jpg"
+    Image.new("RGB", (200, 150), (210, 210, 210)).save(page)
+    images_dir = tmp_path / "images"
+    images_dir.mkdir()
+
+    class VariantsClient:
+        async def generate(self, prompt: str, image_bytes: bytes) -> str:
+            if "dish_photos" in prompt:
+                return ('{"dish_photos":[{"recipe_title":"Grillmarinade",'
+                        '"kind":"preparation","shared":true,"box":[10,10,100,80]}]}')
+            return ('{"recipes":['
+                    '{"title":"Grillmarinade Variante 1","ingredients":[],"steps":["Grillen"]},'
+                    '{"title":"Grillmarinade Variante 2","ingredients":[],"steps":["Grillen"]}]}')
+
+    recipes = asyncio.run(RecipeExtractor(VariantsClient(), images_dir).extract(page))
+    assert len(recipes) == 2
+    assert recipes[0]["image"] == recipes[1]["image"]
+    assert len(list(images_dir.iterdir())) == 1
