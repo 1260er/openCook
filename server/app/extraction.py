@@ -161,13 +161,14 @@ class _Box:
     title: str
     coords: tuple[int, int, int, int]  # in sent-image space
     kind: str = "preparation"  # finished photos win when titles match equally
+    shared: bool = False  # one page photo explicitly illustrates several variants
 
 
 _TITLE_MATCH_MIN = 0.4
 
 
 def _assign_boxes(recipe_titles: list[str], boxes: list[_Box]) -> dict[int, _Box]:
-    """Assign at most one dish photo to each recipe, strictly 1:1.
+    """Assign at most one photo per recipe; share only explicitly common photos.
 
     Builds the full recipe×box title-similarity matrix and greedily takes the
     strongest pairs, removing both partners once used. This prevents two recipes
@@ -185,7 +186,7 @@ def _assign_boxes(recipe_titles: list[str], boxes: list[_Box]) -> dict[int, _Box
             ).ratio()
             if ratio >= _TITLE_MATCH_MIN:
                 pairs.append((int(box.kind == "finished"), ratio, ri, bi))
-    pairs.sort(key=lambda p: p[0], reverse=True)
+    pairs.sort(key=lambda p: (p[0], p[1]), reverse=True)
 
     assigned: dict[int, _Box] = {}
     used_boxes: set[int] = set()
@@ -194,6 +195,15 @@ def _assign_boxes(recipe_titles: list[str], boxes: list[_Box]) -> dict[int, _Box
             continue
         assigned[ri] = boxes[bi]
         used_boxes.add(bi)
+    for ri, title in enumerate(recipe_titles):
+        if ri in assigned:
+            continue
+        for box in boxes:
+            common_title = box.title.strip().lower()
+            if box.shared and len(common_title) >= 8 and common_title in title.lower() \
+                    and any(other is box for other in assigned.values()):
+                assigned[ri] = box
+                break
     return assigned
 
 
@@ -241,11 +251,14 @@ class RecipeExtractor:
         titles = [r.get("title", "") for r in recipes]
         assigned = _assign_boxes(titles, boxes)
         results = []
+        crop_cache: dict[tuple[int, int, int, int], str | None] = {}
         for i, recipe in enumerate(recipes):
             image_paths = []
             box = assigned.get(i)
             if box is not None:
-                crop_path = self._crop(original, box.coords, scale_x, scale_y)
+                if box.coords not in crop_cache:
+                    crop_cache[box.coords] = self._crop(original, box.coords, scale_x, scale_y)
+                crop_path = crop_cache[box.coords]
                 if crop_path is not None:
                     image_paths.append(crop_path)
             results.append(
@@ -287,6 +300,7 @@ def _parse_boxes(raw: str, sent_size: tuple[int, int]) -> list[_Box]:
             title=str(item.get("recipe_title", "")),
             coords=(px(box[0], sw), px(box[1], sh), px(box[2], sw), px(box[3], sh)),
             kind=item.get("kind") if item.get("kind") == "finished" else "preparation",
+            shared=item.get("shared") is True,
         ))
     return out
 
