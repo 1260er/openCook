@@ -165,6 +165,7 @@ class _Box:
 
 
 _TITLE_MATCH_MIN = 0.4
+_VARIANT_SUFFIX = re.compile(r"\s+(?:variante?|version)\s*\d+\s*$", re.I)
 
 
 def _assign_boxes(recipe_titles: list[str], boxes: list[_Box]) -> dict[int, _Box]:
@@ -200,8 +201,18 @@ def _assign_boxes(recipe_titles: list[str], boxes: list[_Box]) -> dict[int, _Box
             continue
         for box in boxes:
             common_title = box.title.strip().lower()
-            if box.shared and len(common_title) >= 8 and common_title in title.lower() \
-                    and any(other is box for other in assigned.values()):
+            variant_base = _VARIANT_SUFFIX.sub("", title).strip().lower()
+            matching_variants = [
+                other for other in recipe_titles
+                if _VARIANT_SUFFIX.search(other) and
+                _VARIANT_SUFFIX.sub("", other).strip().lower() == variant_base
+            ]
+            clearly_shared = (
+                len(boxes) == 1 and len(matching_variants) > 1 and
+                len(variant_base) >= 8 and variant_base in common_title
+            )
+            if (box.shared and len(common_title) >= 8 and common_title in title.lower()
+                    or clearly_shared) and any(other is box for other in assigned.values()):
                 assigned[ri] = box
                 break
     return assigned
@@ -275,8 +286,39 @@ class RecipeExtractor:
         if bx2 - bx1 < 10 or by2 - by1 < 10:
             return None
         name = f"{uuid.uuid4()}.jpg"
-        original.crop((bx1, by1, bx2, by2)).save(self._images_dir / name, quality=88)
+        crop = original.crop((bx1, by1, bx2, by2))
+        _trim_dark_caption(crop).save(self._images_dir / name, quality=88)
         return name
+
+
+def _trim_dark_caption(crop: Image.Image) -> Image.Image:
+    """Trim a dark text panel below a colorful photo in a scanned app/web screenshot.
+
+    The model may include the steps below a photo in its bounding box. Only trim
+    when a broad, sustained dark panel follows colorful photo rows; other image
+    layouts are left alone. Leave room above the boundary for an overlaid caption.
+    """
+    w, h = crop.size
+    if w < 100 or h < 120:
+        return crop
+    xs = range(w // 20, w - w // 20, max(1, w // 80))
+
+    def fractions(y: int) -> tuple[float, float]:
+        pixels = [crop.getpixel((x, y)) for x in xs]
+        return (
+            sum(max(p) < 45 for p in pixels) / len(pixels),
+            sum(max(p) > 70 and max(p) - min(p) > 25 for p in pixels) / len(pixels),
+        )
+
+    rows = [(y, *fractions(y)) for y in range(0, h, 4)]
+    for i in range(max(5, int(len(rows) * .4)), len(rows) - 10):
+        dark_below = sum(row[1] for row in rows[i:i + 5]) / 5
+        color_above = sum(row[2] for row in rows[i - 5:i]) / 5
+        remaining_dark = sum(row[1] for row in rows[i:]) / len(rows[i:])
+        if dark_below > .85 and color_above > .25 and remaining_dark > .8:
+            boundary = rows[i][0]
+            return crop.crop((0, 0, w, max(10, boundary - min(60, int(boundary * .2)))))
+    return crop
 
 
 def _to_jpeg(img: Image.Image) -> bytes:
