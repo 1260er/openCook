@@ -285,7 +285,9 @@ private fun AppNavHost(
                 onOpenRecipe = { recipeId, planEntryId ->
                     navController.navigate(Routes.recipeDetail(recipeId, planEntryId))
                 },
-                onPickRecipe = { date, slot -> navController.navigate(Routes.planPick(date, slot)) },
+                onPickRecipe = { date, slot, swapEntryId ->
+                    navController.navigate(Routes.planPick(date, slot, swapEntryId))
+                },
                 onOpenRetrospect = { navController.navigate(Routes.RETROSPECT) },
             )
         }
@@ -330,11 +332,13 @@ private fun AppNavHost(
             arguments = listOf(
                 navArgument(Routes.ARG_DATE) { type = NavType.StringType },
                 navArgument(Routes.ARG_SLOT) { type = NavType.StringType },
+                navArgument(Routes.ARG_SWAP_ENTRY) { type = NavType.StringType; defaultValue = "" },
             ),
         ) { entry ->
             MealPlanPickScreen(
                 date = entry.arguments?.getString(Routes.ARG_DATE).orEmpty(),
                 slot = entry.arguments?.getString(Routes.ARG_SLOT).orEmpty(),
+                swapEntryId = entry.arguments?.getString(Routes.ARG_SWAP_ENTRY)?.takeIf { it.isNotEmpty() },
                 onBack = { navController.popBackStack() },
             )
         }

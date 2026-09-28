@@ -346,6 +346,10 @@ class RecipeDetailViewModel @Inject constructor(
         PlanWindow.byWeek((0L..13L).map { LocalDate.now().plusDays(it) })
             .map { group -> group.days.map(LocalDate::toString) }
 
+    /** Household allows several dishes per meal — the plan sheet then offers "add as well". */
+    val multiDishMeals: StateFlow<Boolean> = settings.multiDishMeals
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     /** Which meals the household plans — the sheet offers a slot choice only when >1. */
     val plannedMeals: StateFlow<List<String>> = settings.plannedMeals
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MealPlanSlots.DEFAULT_PLANNED)

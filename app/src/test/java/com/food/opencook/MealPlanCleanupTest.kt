@@ -29,6 +29,8 @@ import com.food.opencook.sync.SyncTrigger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -87,10 +89,6 @@ internal fun planEntry(id: String, recipeId: String, date: String, cookedAt: Str
         updatedAt = 0,
     )
 
-/**
- * A plan entry whose recipe is gone can't be drawn — no name, no photo, and the recipe
- * screen it opens has nothing to load. These are the two ways it gets cleaned up.
- */
 class MealPlanCleanupTest {
 
     private fun fixture(): Triple<FakeMealPlanDao, FakeMessageDao, MealPlanRepository> {
@@ -103,6 +101,9 @@ class MealPlanCleanupTest {
         )
         return Triple(planDao, messageDao, MealPlanRepository(planDao, FakeMealDayDao(), recorder))
     }
+
+    // --- Cleanup: a plan entry whose recipe is gone can't be drawn — no name, no photo,
+    // and the recipe screen it opens has nothing to load. The two ways it gets removed.
 
     @Test
     fun deletingARecipeTakesItsPlanEntriesAndTombstonesThem() = runTest {
@@ -135,5 +136,43 @@ class MealPlanCleanupTest {
         // Local-only: "the recipe isn't here" is this device's view, and a peer that still
         // has it must keep its entry.
         assertTrue(messageDao.messages.none { it.dataset == SyncDatasets.MEALPLAN })
+    }
+
+    // --- Several dishes in one meal: swapping one must leave the other, adding keeps both.
+
+    @Test
+    fun swappingOneDishKeepsTheOtherInTheSameMeal() = runTest {
+        val (planDao, _, repo) = fixture()
+        planDao.entries["e1"] = planEntry("e1", "lasagne", "2026-10-04")
+        planDao.entries["e2"] = planEntry("e2", "salad", "2026-10-04")
+
+        repo.replaceEntry("e1", "curry")
+
+        assertEquals("curry", planDao.entries["e1"]?.recipeId)
+        assertEquals("salad", planDao.entries["e2"]?.recipeId)
+    }
+
+    @Test
+    fun aSwappedDishStartsUncookedAndUnpinned() = runTest {
+        val (planDao, _, repo) = fixture()
+        planDao.entries["e1"] = planEntry("e1", "lasagne", "2026-10-04", cookedAt = "2026-10-04")
+            .copy(pinned = true)
+
+        repo.replaceEntry("e1", "curry")
+
+        val swapped = planDao.entries.getValue("e1")
+        assertNull(swapped.cookedAt)
+        assertFalse(swapped.pinned)
+    }
+
+    @Test
+    fun addingToAFilledMealKeepsWhatIsThere() = runTest {
+        val (planDao, _, repo) = fixture()
+        planDao.entries["e1"] = planEntry("e1", "lasagne", "2026-10-04")
+
+        repo.addToCell("2026-10-04", "dinner", "salad")
+
+        val dinner = planDao.entries.values.filter { it.date == "2026-10-04" && it.slot == "dinner" }
+        assertEquals(setOf("lasagne", "salad"), dinner.map { it.recipeId }.toSet())
     }
 }

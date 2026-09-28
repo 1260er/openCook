@@ -37,6 +37,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
@@ -72,6 +73,7 @@ fun HouseholdSettingsScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val contentLanguage by viewModel.contentLanguage.collectAsStateWithLifecycle()
     val plannedMeals by viewModel.plannedMeals.collectAsStateWithLifecycle()
+    val multiDishMeals by viewModel.multiDishMeals.collectAsStateWithLifecycle()
     var showLeaveConfirm by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showMealsDialog by remember { mutableStateOf(false) }
@@ -80,6 +82,8 @@ fun HouseholdSettingsScreen(
         PlannedMealsDialog(
             planned = plannedMeals,
             onTogglePlanned = viewModel::setMealPlanned,
+            multiDish = multiDishMeals,
+            onMultiDish = viewModel::setMultiDishMeals,
             onDismiss = { showMealsDialog = false },
         )
     }
@@ -203,6 +207,8 @@ fun contentLanguageLabel(code: String?): String = when (code) {
 private fun PlannedMealsDialog(
     planned: List<String>,
     onTogglePlanned: (String, Boolean) -> Unit,
+    multiDish: Boolean,
+    onMultiDish: (Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
@@ -237,6 +243,18 @@ private fun PlannedMealsDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = Spacing.sm),
                 )
+                // The occasional second dish (guests, a side) — opt-in, so the everyday plan
+                // doesn't grow an "add another" offer on every meal. It shapes the same thing
+                // as the checkboxes above (what a meal can hold), hence the same dialog.
+                HorizontalDivider(Modifier.padding(vertical = Spacing.md))
+                Row(
+                    Modifier.fillMaxWidth().clickable { onMultiDish(!multiDish) },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                ) {
+                    Text(stringResource(R.string.household_multi_dish), Modifier.weight(1f))
+                    Switch(checked = multiDish, onCheckedChange = onMultiDish)
+                }
             }
         },
         confirmButton = {},

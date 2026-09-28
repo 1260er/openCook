@@ -144,7 +144,8 @@ private val WEEK_HEADER_HEIGHT = 40.dp
 @Composable
 fun MealPlanScreen(
     onOpenRecipe: (recipeId: String, planEntryId: String) -> Unit = { _, _ -> },
-    onPickRecipe: (date: String, slot: String) -> Unit = { _, _ -> },
+    /** [swapEntryId] names the dish being swapped (its ↔); null adds a dish to the meal. */
+    onPickRecipe: (date: String, slot: String, swapEntryId: String?) -> Unit = { _, _, _ -> },
     onOpenRetrospect: () -> Unit = {},
     viewModel: MealPlanViewModel = hiltViewModel(),
 ) {
@@ -170,6 +171,7 @@ fun MealPlanScreen(
     val generating by viewModel.generating.collectAsStateWithLifecycle()
 
     val plannedMeals by viewModel.plannedMeals.collectAsStateWithLifecycle()
+    val multiDishMeals by viewModel.multiDishMeals.collectAsStateWithLifecycle()
     // The slot column only earns its space once a day can hold more than one dish. With a
     // single meal planned the card stays exactly what it was before slots existed — unless
     // a one-off in a switched-off meal is on screen, which would otherwise be unlabelled.
@@ -400,11 +402,13 @@ fun MealPlanScreen(
                             today = todayKey,
                             plannedMeals = plannedMeals,
                             showSlots = showSlots,
+                            multiDish = multiDishMeals,
                             hoveredCell = hoveredCell.value,
                             peekDish = peekDish,
                             onPeekShown = viewModel::markSwipeHintSeen,
                             onCellBounds = { key, rect -> cellBounds[key] = rect },
-                            onAdd = { slot -> onPickRecipe(day.date, slot) },
+                            onAdd = { slot -> onPickRecipe(day.date, slot, null) },
+                            onSwap = { slot, entryId -> onPickRecipe(day.date, slot, entryId) },
                             onRemoveDish = removeDishWithUndo,
                             onAddToShopping = { planned -> addToShoppingWithUndo(planned, day.date) },
                             onOpenRecipe = onOpenRecipe,
@@ -529,11 +533,13 @@ private fun DayCard(
     today: String,
     plannedMeals: List<String>,
     showSlots: Boolean,
+    multiDish: Boolean,
     hoveredCell: String?,
     peekDish: String?,
     onPeekShown: () -> Unit,
     onCellBounds: (String, Rect) -> Unit,
     onAdd: (String) -> Unit,
+    onSwap: (slot: String, entryId: String) -> Unit,
     onRemoveDish: (String, PlannedRecipe) -> Unit,
     onAddToShopping: (PlannedRecipe) -> Unit,
     onOpenRecipe: (recipeId: String, planEntryId: String) -> Unit,
@@ -629,7 +635,7 @@ private fun DayCard(
                     peekDish = peekDish,
                     onPeekShown = onPeekShown,
                     modifier = Modifier.onGloballyPositioned { onCellBounds(key, it.boundsInRoot()) },
-                    onAdd = { onAdd(slotPlan.slot) },
+                    onSwap = { planned -> onSwap(slotPlan.slot, planned.entryId) },
                     onRemoveDish = onRemoveDish,
                     onAddToShopping = onAddToShopping,
                     onOpenRecipe = onOpenRecipe,
@@ -650,6 +656,9 @@ private fun DayCard(
             // A quiet empty line between two dish rows with pictures was easy to overlook.
             val filledRows = day.slots.filter { !it.isExtra && it.dishes.isNotEmpty() }
             val emptySlots = day.slots.filter { !it.isExtra && it.dishes.isEmpty() }
+            // With several dishes per meal allowed, every planned meal of a day still ahead
+            // offers "+ meal" — in the same chip row, in the order of the day.
+            val chipSlots = if (multiDish && !isPast) day.slots.filter { !it.isExtra } else emptySlots
             filledRows.forEachIndexed { index, slotPlan ->
                 if (index > 0) {
                     HorizontalDivider(
@@ -677,7 +686,7 @@ private fun DayCard(
                 extraRows.forEach { slotRow(it) }
             }
 
-            if (emptySlots.isNotEmpty()) {
+            if (chipSlots.isNotEmpty()) {
                 if (filledRows.isNotEmpty() || extraRows.isNotEmpty()) {
                     HorizontalDivider(
                         Modifier.padding(vertical = Spacing.xs),
@@ -685,15 +694,22 @@ private fun DayCard(
                     )
                 }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-                    emptySlots.forEach { slotPlan ->
+                    chipSlots.forEach { slotPlan ->
                         val key = "${day.date}|${slotPlan.slot}"
+                        val empty = slotPlan.dishes.isEmpty()
                         AddMealChip(
                             label = if (showSlots) stringResource(MealPlanSlots.shortLabelRes(slotPlan.slot))
                             else stringResource(R.string.mealplan_slot_add),
-                            isDropTarget = hoveredCell == key,
+                            isDropTarget = empty && hoveredCell == key,
                             onAdd = { onAdd(slotPlan.slot) },
                             // Still a drop target: a dish dragged onto the chip fills that meal.
-                            modifier = Modifier.onGloballyPositioned { onCellBounds(key, it.boundsInRoot()) },
+                            // A filled meal's row already is its target — registering the chip
+                            // under the same key would move the target off the row.
+                            modifier = if (empty) {
+                                Modifier.onGloballyPositioned { onCellBounds(key, it.boundsInRoot()) }
+                            } else {
+                                Modifier
+                            },
                         )
                     }
                 }
@@ -714,7 +730,7 @@ private fun SlotRow(
     peekDish: String?,
     onPeekShown: () -> Unit,
     modifier: Modifier = Modifier,
-    onAdd: () -> Unit,
+    onSwap: (PlannedRecipe) -> Unit,
     onRemoveDish: (String, PlannedRecipe) -> Unit,
     onAddToShopping: (PlannedRecipe) -> Unit,
     onOpenRecipe: (recipeId: String, planEntryId: String) -> Unit,
@@ -734,7 +750,8 @@ private fun SlotRow(
             .background(background),
     ) {
         // Every row carries the same swap button, and it always opens the picker — which
-        // leads with the planner's own proposal. Empty meals are AddMealChips, not rows.
+        // leads with the planner's own proposal — for exactly that dish, so a meal holding
+        // two keeps the other. Empty meals are AddMealChips, not rows.
         run {
             slotPlan.dishes.forEach { planned ->
                 // Removing is a swipe (left), the same gesture as in the shopping and pantry
@@ -761,7 +778,7 @@ private fun SlotRow(
                         isNow = isNow,
                         onOpenRecipe = onOpenRecipe,
                         faded = isPast && !planned.cooked,
-                        onSwap = onAdd,
+                        onSwap = { onSwap(planned) },
                     )
                 }
             }

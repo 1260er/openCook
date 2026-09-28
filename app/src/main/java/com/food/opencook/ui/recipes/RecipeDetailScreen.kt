@@ -193,6 +193,7 @@ fun RecipeDetailScreen(
     val planAddedFormat = stringResource(R.string.recipe_plan_added)
     val planned by viewModel.plannedDishes.collectAsStateWithLifecycle()
     val plannedMeals by viewModel.plannedMeals.collectAsStateWithLifecycle()
+    val multiDishMeals by viewModel.multiDishMeals.collectAsStateWithLifecycle()
     val recipeMealTypes by viewModel.recipeMealTypes.collectAsStateWithLifecycle()
 
     // Cooked-off-plan: today had a different dish planned → swap happens automatically; the
@@ -363,6 +364,7 @@ fun RecipeDetailScreen(
             recipeMealTypes = recipeMealTypes,
             onAssign = viewModel::assignToMealPlan,
             onReplace = viewModel::replaceOnMealPlan,
+            multiDish = multiDishMeals,
             onDismiss = { showPlanSheet = false },
             onAssigned = { dayLabel ->
                 scope.launch { snackbarHostState.showSnackbar(planAddedFormat.format(dayLabel)) }

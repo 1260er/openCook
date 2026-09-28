@@ -213,6 +213,7 @@
     <string name="recipe_plan_replace_title">Day already planned</string>
     <string name="recipe_plan_replace_text">“%2$s” is already planned for %1$s. Replace it with this recipe?</string>
     <string name="recipe_plan_replace_confirm">Replace</string>
+    <string name="recipe_plan_add_also">Add as well</string>
     <string name="recipe_plan_day_free">Free</string>
     <string name="wizard_step_of">Step %1$d of %2$d</string>
     <string name="wizard_back">Back</string>
@@ -590,6 +591,7 @@
     <!-- Household setting: which meals are planned at all -->
     <string name="household_planned_meals">Planned meals</string>
     <string name="household_planned_meals_hint">At least one meal must stay active.</string>
+    <string name="household_multi_dish">Several dishes per meal</string>
     <!-- Week planner: slots -->
     <string name="mealplan_slot_add">Plan</string>
     <string name="mealplan_slot_add_named">Plan %1$s</string>

@@ -128,6 +128,10 @@ class MealPlanViewModel @Inject constructor(
     val plannedMeals: StateFlow<List<String>> = settingsRepository.plannedMeals
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MealPlanSlots.DEFAULT_PLANNED)
 
+    /** Household-wide: meals may hold several dishes, so filled meals get a "+" chip too. */
+    val multiDishMeals: StateFlow<Boolean> = settingsRepository.multiDishMeals
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     val week: StateFlow<List<DayPlan>> = _today
         .flatMapLatest { anchor ->
             val days = PlanWindow.days(anchor)
@@ -494,10 +498,9 @@ class MealPlanViewModel @Inject constructor(
     }
 
     /**
-     * Put [recipeId] in the cell, replacing whatever sits there. Replacing rather than adding
-     * is what makes one screen serve both the empty row and the swap button: an empty cell has
-     * nothing to clear, so the two collapse into the same operation. Pinned dishes survive
-     * (see [MealPlanRepository.replaceCell]).
+     * Put [recipeId] into the meal. With [entryId] (the ↔ on a dish row) it replaces exactly
+     * that dish; without (a "+ meal" chip) it is added — to an empty meal, or next to what is
+     * there when the household allows several dishes per meal.
      *
      * [reasons] travel only when the user took the planner's own proposal — a hand-picked dish
      * has no score breakdown to explain, and its "why" button stays hidden.
@@ -507,9 +510,14 @@ class MealPlanViewModel @Inject constructor(
         slot: String,
         recipeId: String,
         reasons: List<MealPlanner.ReasonContribution> = emptyList(),
+        entryId: String? = null,
         onDone: () -> Unit = {},
     ) = viewModelScope.launch {
-        mealPlanRepository.replaceCell(dateKey, slot, recipeId, settingsRepository.plannedMealsOnce(), reasons)
+        if (entryId != null) {
+            mealPlanRepository.replaceEntry(entryId, recipeId, reasons)
+        } else {
+            mealPlanRepository.addToCell(dateKey, slot, recipeId, reasons)
+        }
         onDone()
     }
 

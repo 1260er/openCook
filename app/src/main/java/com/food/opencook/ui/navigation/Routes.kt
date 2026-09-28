@@ -53,8 +53,11 @@ object Routes {
     /** Pick a recipe for one cell of the meal plan — a day *and* a meal (full list + search). */
     const val ARG_DATE = "date"
     const val ARG_SLOT = "slot"
-    const val PLAN_PICK = "plan_pick/{$ARG_DATE}/{$ARG_SLOT}"
-    fun planPick(date: String, slot: String) = "plan_pick/$date/$slot"
+    /** Set when the picker swaps one planned dish (the ↔ on its row); absent = add a dish. */
+    const val ARG_SWAP_ENTRY = "entry"
+    const val PLAN_PICK = "plan_pick/{$ARG_DATE}/{$ARG_SLOT}?$ARG_SWAP_ENTRY={$ARG_SWAP_ENTRY}"
+    fun planPick(date: String, slot: String, swapEntryId: String? = null) =
+        "plan_pick/$date/$slot?$ARG_SWAP_ENTRY=${swapEntryId.orEmpty()}"
 
     /** Result key set on the review back-stack entry by [REVIEW_CAMERA]. */
     const val RESULT_CAPTURED_PATH = "captured_path"

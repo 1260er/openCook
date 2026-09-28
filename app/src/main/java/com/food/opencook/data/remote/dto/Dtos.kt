@@ -101,6 +101,9 @@ data class HouseholdSettings(
     /** Which meals of the day the household plans, as newline-joined MealTypes keys
      *  ("lunch\ndinner"). null = never configured → the planner's single-slot default. */
     @SerialName("planned_meals") val plannedMeals: String? = null,
+    /** Whether a meal may hold more than one dish (added by hand — the planner still fills
+     *  one). null = a peer/server that predates the option → keep the local value. */
+    @SerialName("multi_dish_meals") val multiDishMeals: Boolean? = null,
 )
 
 /** Returned to the device that creates/joins — carries the sync credential. */

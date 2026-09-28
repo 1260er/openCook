@@ -263,6 +263,28 @@ class MealPlanRepository @Inject constructor(
         insertGenerated(date, slot, recipeId, encodeReasons(reasons))
     }
 
+    /**
+     * Swap the dish of one entry — the ↔ on a dish row. Only that entry changes: with
+     * several dishes in a meal, [replaceCell] would take the others with it.
+     */
+    suspend fun replaceEntry(entryId: String, recipeId: String, reasons: List<ReasonContribution> = emptyList()) {
+        val entry = mealPlanDao.getById(entryId) ?: return
+        val updated = entry.copy(
+            recipeId = recipeId,
+            reasonsJson = encodeReasons(reasons),
+            pinned = false,
+            cookedAt = null,
+            updatedAt = System.currentTimeMillis(),
+        )
+        mealPlanDao.upsert(updated)
+        messageRecorder.record(MealPlanMessageEncoder.encode(updated))
+    }
+
+    /** Put one more dish into a meal, keeping what is there — the "+ meal" chip. */
+    suspend fun addToCell(date: String, slot: String, recipeId: String, reasons: List<ReasonContribution> = emptyList()) {
+        insertGenerated(date, slot, recipeId, encodeReasons(reasons))
+    }
+
     private suspend fun clearNonPinned(entries: List<MealPlanEntity>) {
         entries.filter { !it.pinned }.forEach { e ->
             mealPlanDao.deleteById(e.id)

@@ -154,6 +154,16 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { if (stored == null) it.remove(PLANNED_MEALS) else it[PLANNED_MEALS] = stored }
     }
 
+    /** Household-wide: meals may hold several dishes, added by hand (e.g. for guests). Off by
+     *  default, so the plan offers "+ meal" only for empty meals. The planner fills one either way. */
+    val multiDishMeals: Flow<Boolean> = pref { it[MULTI_DISH_MEALS] ?: false }
+
+    suspend fun multiDishMealsOnce(): Boolean = dataStore.data.first()[MULTI_DISH_MEALS] ?: false
+
+    suspend fun setMultiDishMeals(enabled: Boolean) {
+        dataStore.edit { it[MULTI_DISH_MEALS] = enabled }
+    }
+
     /**
      * The complete household-wide settings object as this device currently knows it.
      *
@@ -165,6 +175,7 @@ class SettingsRepository @Inject constructor(
         householdSize = householdSizeOnce(),
         contentLanguage = contentLanguageOnce(),
         plannedMeals = MealPlanSlots.toStored(plannedMealsOnce()),
+        multiDishMeals = multiDishMealsOnce(),
     )
 
     /** Adopt a settings object received from the server or a peer. Absent fields keep the
@@ -173,6 +184,7 @@ class SettingsRepository @Inject constructor(
         setHouseholdSize(remote.householdSize)
         setContentLanguage(remote.contentLanguage)
         remote.plannedMeals?.let { setPlannedMeals(MealPlanSlots.plannedFromStored(it)) }
+        remote.multiDishMeals?.let { setMultiDishMeals(it) }
     }
 
     /**
@@ -323,6 +335,7 @@ class SettingsRepository @Inject constructor(
         val HOUSEHOLD_PIN = stringPreferencesKey("household_pin")
         val P2P_ENABLED = booleanPreferencesKey("p2p_enabled")
         val PLANNED_MEALS = stringPreferencesKey("planned_meals")
+        val MULTI_DISH_MEALS = booleanPreferencesKey("multi_dish_meals")
         val DISCOVER_HIDDEN = stringPreferencesKey("discover_hidden")
         val DISCOVER_CUSTOM = stringPreferencesKey("discover_custom")
         val RECIPE_SORT = stringPreferencesKey("recipe_sort")

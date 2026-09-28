@@ -44,6 +44,9 @@ class HouseholdSettings(BaseModel):
     # ("breakfast\nlunch\nsnack\ndinner"). The server only stores and echoes these;
     # null/absent means the app's own default (a single lunch slot).
     planned_meals: str | None = None
+    # Whether a meal may hold several dishes, added by hand in the app. Stored and echoed
+    # only; null/absent means off.
+    multi_dish_meals: bool | None = None
 
 
 class HouseholdSummary(BaseModel):
