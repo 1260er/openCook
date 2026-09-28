@@ -24,9 +24,6 @@
 
     <!-- Bottom navigation -->
     <string name="nav_recipes">Recipes</string>
-    <string name="nav_scan">Scan</string>
-    <string name="nav_shopping">Shopping list</string>
-    <string name="nav_settings">Settings</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -52,11 +49,7 @@
     <string name="camera_permission_rationale">Camera access is needed to take a photo. You can also pick an image from the gallery instead.</string>
 
     <!-- Processing -->
-    <string name="processing_title">Processing…</string>
-    <string name="processing_hint">The recipe is being recognized on the server. This may take a moment.</string>
-    <string name="processing_offline">Server unreachable — the scan is queued and will be processed as soon as the server is back.</string>
     <string name="processing_cancel">Cancel</string>
-    <string name="processing_error">Recognition failed</string>
 
     <!-- Review -->
     <string name="review_title">Review recipe</string>
@@ -76,7 +69,6 @@
     <string name="review_save">Save</string>
     <string name="review_image_take">Take photo</string>
     <string name="review_image_gallery">Gallery</string>
-    <string name="review_image_later">Later</string>
     <string name="review_image_rotate">Rotate 90°</string>
     <string name="review_image_crop">Crop</string>
     <string name="crop_apply">Apply</string>
@@ -85,7 +77,6 @@
     <!-- Recipes -->
     <string name="recipes_title">Recipes</string>
     <string name="recipes_title_count">Recipes (%1$d)</string>
-    <string name="recipes_empty">No recipes yet. Tap “Scan” to capture your first recipe.</string>
     <string name="recipes_search_hint">Search recipes…</string>
     <string name="recipes_filter_all">All</string>
     <string name="recipes_filter">Filter</string>
@@ -105,7 +96,6 @@
     <string name="recipe_delete">Delete</string>
     <string name="recipe_edit">Edit</string>
     <string name="recipe_like">Liked</string>
-    <string name="recipe_cookbook_label">Cookbook</string>
     <string name="recipe_cooked_mark">Mark as cooked</string>
     <string name="recipe_cooked_marked">Cooked today</string>
     <string name="recipe_cooked_badge">Cooked</string>
@@ -159,7 +149,6 @@
     <string name="stage_reading_text">Reading recipe text…</string>
     <string name="stage_detecting_photos">Detecting dish photos…</string>
     <string name="status_processing_generic">Processing…</string>
-    <string name="status_processing_many">Processing %1$d scans…</string>
     <string name="status_review_action">Review</string>
     <string name="status_dismiss">Dismiss</string>
     <string name="status_cancel">Cancel</string>
@@ -174,7 +163,6 @@
     <string name="status_added_many">“%1$s” + %2$d more</string>
 
     <!-- Shopping list -->
-    <string name="shopping_title">Shopping list</string>
     <string name="segment_shopping">Shopping list</string>
     <string name="segment_pantry">Pantry</string>
     <string name="search">Search</string>
@@ -186,21 +174,14 @@
     <string name="shopping_add">Add</string>
     <string name="shopping_empty">Your shopping list is empty. Add items or pull in a recipe\'s ingredients.</string>
     <string name="shopping_delete">Remove</string>
-    <string name="shopping_clear_checked">Checked → pantry</string>
     <string name="shopping_all_bought_title">All bought 🎉</string>
     <string name="shopping_all_bought_action">Move to pantry</string>
-    <string name="shopping_clear_all">Clear all</string>
-    <string name="shopping_clear_all_title">Clear shopping list?</string>
-    <string name="shopping_clear_all_text">All %1$d items will be removed. This cannot be undone.</string>
-    <string name="shopping_clear_all_confirm">Clear</string>
-    <string name="shopping_more_actions">More actions</string>
     <string name="shopping_add_from_recipe">Add to shopping list</string>
     <string name="shopping_already_home">Already at home (→ pantry)</string>
     <string name="shopping_moved_to_pantry">Moved to pantry</string>
     <string name="shopping_skipped_chip">%1$d in pantry — skipped</string>
     <string name="shopping_need_anyway">Need it anyway</string>
     <string name="shopping_needed_for">For: %1$s</string>
-    <string name="shopping_done_section">Done</string>
     <string name="shopping_actions">Actions</string>
     <string name="swipe_to_pantry">Pantry</string>
     <string name="swipe_to_shopping">Shopping list</string>
@@ -238,7 +219,6 @@
     <string name="wizard_ingredient_qty">Amount</string>
     <string name="wizard_ingredient_unit">Unit</string>
     <string name="wizard_ingredient_name">Ingredient</string>
-    <string name="wizard_step_number">Step %1$d</string>
     <string name="wizard_step_move_up">Move up</string>
     <string name="wizard_step_move_down">Move down</string>
     <string name="wizard_time_none">Not specified</string>
@@ -263,7 +243,6 @@
     <string name="mealplan_pick_clear_filter">Remove the filter above to choose from all recipes.</string>
     <string name="mealplan_no_recipes">No recipes to plan yet.</string>
     <string name="mealplan_generated">Ingredients added to the shopping list</string>
-    <string name="mealplan_remove_dish">Remove dish</string>
     <string name="mealplan_day_not_planned">Not planned</string>
     <string name="mealplan_day_yesterday">Yesterday</string>
     <string name="mealplan_day_today">Today</string>
@@ -273,11 +252,6 @@
     <string name="mealplan_week_next">Next week</string>
     <string name="mealplan_week_after_next">Week after next</string>
     <string name="mealplan_jump_today">Today</string>
-    <string name="mealplan_skip">Skip</string>
-    <string name="mealplan_unskip">Plan</string>
-    <string name="mealplan_skipped_label">skipped</string>
-    <string name="mealplan_pin">Pin (kept when rolling)</string>
-    <string name="mealplan_unpin">Unpin</string>
 
     <!-- Meal-planner reasons (why a dish was picked) -->
     <string name="mealplan_reason_week_reuse">Uses up %1$s</string>
@@ -301,7 +275,6 @@
     <string name="protein_label_plant">Plant-based</string>
     <string name="mealplan_reasons_title">Why this dish?</string>
     <string name="mealplan_reasons_why">Why?</string>
-    <string name="mealplan_reasons_close">Close</string>
     <string name="mealplan_reasons_section_for">For</string>
     <string name="mealplan_reasons_section_against">Against</string>
     <string name="mealplan_reasons_none">Added manually — no reasoning.</string>
@@ -326,7 +299,6 @@
     <string name="onboarding_peers_step_title">Join through a phone that already has the household — or start a new one</string>
     <string name="onboarding_peers_searching">Looking for phones on this Wi-Fi… openCook must be open on the other phone.</string>
     <string name="onboarding_peers_create_subtitle">Start on this phone — the others join afterwards.</string>
-    <string name="onboarding_manual_hint">Not found? Enter the server address manually:</string>
     <string name="onboarding_manual_toggle">Enter server manually</string>
     <string name="onboarding_manual_address_label">Server address</string>
     <string name="onboarding_manual_address_placeholder">192.168.0.10:8000</string>
@@ -601,7 +573,6 @@
     <string name="household_multi_dish">Several dishes per meal</string>
     <!-- Week planner: slots -->
     <string name="mealplan_slot_add">Plan</string>
-    <string name="mealplan_slot_add_named">Plan %1$s</string>
     <string name="shopping_already_on_list">Already on the shopping list — nothing added</string>
     <string name="mealplan_add_missing">Add missing items to the shopping list</string>
     <string name="mealplan_slot_no_recipes">No %1$s recipes yet</string>

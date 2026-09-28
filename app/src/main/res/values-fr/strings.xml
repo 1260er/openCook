@@ -16,7 +16,7 @@
   ~  along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Default (English) resources; German lives in values-de/. app_name is generated per
          build type in build.gradle.kts (resValue) so the second test identity (debug2) can
          show a distinct launcher label. -->
@@ -24,9 +24,6 @@
 
     <!-- Bottom navigation -->
     <string name="nav_recipes">Recettes</string>
-    <string name="nav_scan">Scanner</string>
-    <string name="nav_shopping">Liste de courses</string>
-    <string name="nav_settings">Paramètres</string>
 
     <!-- Settings -->
     <string name="settings_title">Paramètres</string>
@@ -52,11 +49,7 @@
     <string name="camera_permission_rationale">L\'accès à l\'appareil photo est nécessaire pour prendre une photo. Vous pouvez aussi choisir une image dans la galerie.</string>
 
     <!-- Processing -->
-    <string name="processing_title">Traitement…</string>
-    <string name="processing_hint">La recette est en cours de reconnaissance sur le serveur. Cela peut prendre un moment.</string>
-    <string name="processing_offline">Serveur injoignable — l\'analyse est mise en attente et sera traitée dès le retour du serveur.</string>
     <string name="processing_cancel">Annuler</string>
-    <string name="processing_error">Échec de la reconnaissance</string>
 
     <!-- Review -->
     <string name="review_title">Vérifier la recette</string>
@@ -76,7 +69,6 @@
     <string name="review_save">Enregistrer</string>
     <string name="review_image_take">Prendre une photo</string>
     <string name="review_image_gallery">Galerie</string>
-    <string name="review_image_later">Plus tard</string>
     <string name="review_image_rotate">Pivoter de 90°</string>
     <string name="review_image_crop">Recadrer</string>
     <string name="crop_apply">Appliquer</string>
@@ -85,7 +77,6 @@
     <!-- Recipes -->
     <string name="recipes_title">Recettes</string>
     <string name="recipes_title_count">Recettes (%1$d)</string>
-    <string name="recipes_empty">Aucune recette pour l\'instant. Touchez “Scanner” pour enregistrer votre première recette.</string>
     <string name="recipes_search_hint">Rechercher des recettes…</string>
     <string name="recipes_filter_all">Toutes</string>
     <string name="recipes_filter">Filtrer</string>
@@ -105,7 +96,6 @@
     <string name="recipe_delete">Supprimer</string>
     <string name="recipe_edit">Modifier</string>
     <string name="recipe_like">Aimée</string>
-    <string name="recipe_cookbook_label">Livre de recettes</string>
     <string name="recipe_cooked_mark">Marquer comme cuisinée</string>
     <string name="recipe_cooked_marked">Cuisinée aujourd’hui</string>
     <string name="recipe_cooked_badge">Cuisinées</string>
@@ -164,7 +154,6 @@
     <string name="stage_reading_text">Lecture du texte de la recette…</string>
     <string name="stage_detecting_photos">Détection des photos de plats…</string>
     <string name="status_processing_generic">Traitement…</string>
-    <string name="status_processing_many">Traitement de %1$d analyses…</string>
     <string name="status_review_action">Vérifier</string>
     <string name="status_dismiss">Fermer</string>
     <string name="status_cancel">Annuler</string>
@@ -180,7 +169,6 @@
     <string name="status_added_many">“%1$s” + %2$d autres</string>
 
     <!-- Shopping list -->
-    <string name="shopping_title">Liste de courses</string>
     <string name="segment_shopping">Liste de courses</string>
     <string name="segment_pantry">Garde-manger</string>
     <string name="search">Rechercher</string>
@@ -192,21 +180,14 @@
     <string name="shopping_add">Ajouter</string>
     <string name="shopping_empty">Votre liste de courses est vide. Ajoutez des articles ou importez les ingrédients d\'une recette.</string>
     <string name="shopping_delete">Retirer</string>
-    <string name="shopping_clear_checked">Cochés → garde-manger</string>
     <string name="shopping_all_bought_title">Tout est acheté 🎉</string>
     <string name="shopping_all_bought_action">Déplacer vers le garde-manger</string>
-    <string name="shopping_clear_all">Tout effacer</string>
-    <string name="shopping_clear_all_title">Vider la liste de courses ?</string>
-    <string name="shopping_clear_all_text">Les %1$d articles seront supprimés. Cette action est irréversible.</string>
-    <string name="shopping_clear_all_confirm">Vider</string>
-    <string name="shopping_more_actions">Plus d\'actions</string>
     <string name="shopping_add_from_recipe">Ajouter à la liste de courses</string>
     <string name="shopping_already_home">Déjà à la maison (→ garde-manger)</string>
     <string name="shopping_moved_to_pantry">Déplacé vers le garde-manger</string>
     <string name="shopping_skipped_chip">%1$d au garde-manger — ignorés</string>
     <string name="shopping_need_anyway">En avoir quand même</string>
     <string name="shopping_needed_for">Pour : %1$s</string>
-    <string name="shopping_done_section">Terminé</string>
     <string name="shopping_actions">Actions</string>
     <string name="swipe_to_pantry">Garde-manger</string>
     <string name="swipe_to_shopping">Liste de courses</string>
@@ -244,7 +225,6 @@
     <string name="wizard_ingredient_qty">Quantité</string>
     <string name="wizard_ingredient_unit">Unité</string>
     <string name="wizard_ingredient_name">Ingrédient</string>
-    <string name="wizard_step_number">Étape %1$d</string>
     <string name="wizard_step_move_up">Monter</string>
     <string name="wizard_step_move_down">Descendre</string>
     <string name="wizard_time_none">Non indiqué</string>
@@ -269,7 +249,6 @@
     <string name="mealplan_pick_clear_filter">Retirez le filtre ci-dessus pour choisir parmi toutes les recettes.</string>
     <string name="mealplan_no_recipes">Aucune recette à planifier pour l\'instant.</string>
     <string name="mealplan_generated">Ingrédients ajoutés à la liste de courses</string>
-    <string name="mealplan_remove_dish">Retirer le plat</string>
     <string name="mealplan_day_not_planned">Non planifié</string>
     <string name="mealplan_day_yesterday">Hier</string>
     <string name="mealplan_day_today">Aujourd’hui</string>
@@ -279,11 +258,6 @@
     <string name="mealplan_week_next">La semaine prochaine</string>
     <string name="mealplan_week_after_next">La semaine d’après</string>
     <string name="mealplan_jump_today">Aujourd’hui</string>
-    <string name="mealplan_skip">Ignorer</string>
-    <string name="mealplan_unskip">Planifier</string>
-    <string name="mealplan_skipped_label">ignoré</string>
-    <string name="mealplan_pin">Épingler (conservé lors du décalage)</string>
-    <string name="mealplan_unpin">Désépingler</string>
 
     <!-- Meal-planner reasons (why a dish was picked) -->
     <string name="mealplan_reason_week_reuse">Écoule %1$s</string>
@@ -307,7 +281,6 @@
     <string name="protein_label_plant">Végétal</string>
     <string name="mealplan_reasons_title">Pourquoi ce plat ?</string>
     <string name="mealplan_reasons_why">Pourquoi ?</string>
-    <string name="mealplan_reasons_close">Fermer</string>
     <string name="mealplan_reasons_section_for">Pour</string>
     <string name="mealplan_reasons_section_against">Contre</string>
     <string name="mealplan_reasons_none">Ajouté manuellement — sans justification.</string>
@@ -332,7 +305,6 @@
     <string name="onboarding_peers_step_title">Rejoignez un téléphone qui possède déjà le foyer — ou créez-en un nouveau</string>
     <string name="onboarding_peers_searching">Recherche de téléphones sur ce Wi-Fi… openCook doit être ouvert sur l\'autre téléphone.</string>
     <string name="onboarding_peers_create_subtitle">Commencez sur ce téléphone — les autres rejoindront ensuite.</string>
-    <string name="onboarding_manual_hint">Introuvable ? Saisissez l\'adresse du serveur manuellement :</string>
     <string name="onboarding_manual_toggle">Saisir le serveur manuellement</string>
     <string name="onboarding_manual_address_label">Adresse du serveur</string>
     <string name="onboarding_manual_address_placeholder">192.168.0.10:8000</string>
@@ -456,7 +428,8 @@
         <item quantity="many">Supprimer %1$d recettes ?</item>
         <item quantity="other">Supprimer %1$d recettes ?</item>
     </plurals>
-    <plurals name="recipes_delete_selected_text">
+    <!-- Only shown with at least one recipe selected, so "one" never meets 0. -->
+    <plurals name="recipes_delete_selected_text" tools:ignore="ImpliedQuantity">
         <item quantity="one">Cette recette sera définitivement supprimée.</item>
         <item quantity="many">Ces recettes seront définitivement supprimées.</item>
         <item quantity="other">Ces recettes seront définitivement supprimées.</item>
@@ -613,7 +586,6 @@
     <string name="household_multi_dish">Plusieurs plats par repas</string>
     <!-- Week planner: slots -->
     <string name="mealplan_slot_add">Planifier</string>
-    <string name="mealplan_slot_add_named">Planifier %1$s</string>
     <string name="shopping_already_on_list">Déjà sur la liste de courses — rien ajouté</string>
     <string name="mealplan_add_missing">Ajouter les manquants à la liste de courses</string>
     <string name="mealplan_slot_no_recipes">Aucune recette pour %1$s</string>

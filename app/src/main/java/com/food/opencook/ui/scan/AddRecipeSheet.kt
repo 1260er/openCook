@@ -62,7 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -98,7 +98,7 @@ fun AddRecipeSheet(
     scanViewModel: ScanViewModel = hiltViewModel(),
     importViewModel: ImportViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbarHostState = LocalSnackbarHostState.current
 
     // A scan keeps running in the background; progress shows in the status strip.
@@ -121,17 +121,17 @@ fun AddRecipeSheet(
         when (val s = importState) {
             // Cancelled (and so dismissed) as soon as the state moves on.
             is ImportState.Running -> snackbarHostState.showSnackbar(
-                context.getString(R.string.import_running),
+                resources.getString(R.string.import_running),
                 duration = SnackbarDuration.Indefinite,
             )
             // Reset only after the message: resetting re-keys this effect, which would
             // cancel — and so dismiss — the snackbar straight away.
             is ImportState.Done -> {
-                snackbarHostState.showSnackbar(context.getString(R.string.import_done, s.imported, s.skipped))
+                snackbarHostState.showSnackbar(resources.getString(R.string.import_done, s.imported, s.skipped))
                 importViewModel.reset()
             }
             is ImportState.Error -> {
-                snackbarHostState.showSnackbar(context.getString(R.string.import_error, s.message))
+                snackbarHostState.showSnackbar(resources.getString(R.string.import_error, s.message))
                 importViewModel.reset()
             }
             ImportState.Idle -> Unit
