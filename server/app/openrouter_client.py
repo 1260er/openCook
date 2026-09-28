@@ -49,6 +49,11 @@ class OpenRouterClient:
                         exc.response.status_code == 429 or exc.response.status_code >= 500
                     )
                     if not retryable or attempt == self._max_retries:
+                        if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 404:
+                            raise RuntimeError(
+                                f"OpenRouter returned HTTP 404 for model {self._model}; "
+                                "check that it has active endpoints and your provider settings"
+                            ) from exc
                         raise
                     logger.warning("OpenRouter request failed (attempt %d, status %s), retrying",
                                    attempt + 1,
