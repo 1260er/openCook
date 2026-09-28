@@ -160,6 +160,7 @@ def _iso_duration(text: str | None, i18n: "I18n") -> str | None:
 class _Box:
     title: str
     coords: tuple[int, int, int, int]  # in sent-image space
+    kind: str = "preparation"  # finished photos win when titles match equally
 
 
 _TITLE_MATCH_MIN = 0.4
@@ -176,20 +177,19 @@ def _assign_boxes(recipe_titles: list[str], boxes: list[_Box]) -> dict[int, _Box
     """
     if not boxes or not recipe_titles:
         return {}
-    pairs: list[tuple[float, int, int]] = []
+    pairs: list[tuple[int, float, int, int]] = []
     for ri, title in enumerate(recipe_titles):
         for bi, box in enumerate(boxes):
             ratio = difflib.SequenceMatcher(
                 None, title.lower(), box.title.lower()
             ).ratio()
-            pairs.append((ratio, ri, bi))
+            if ratio >= _TITLE_MATCH_MIN:
+                pairs.append((int(box.kind == "finished"), ratio, ri, bi))
     pairs.sort(key=lambda p: p[0], reverse=True)
 
     assigned: dict[int, _Box] = {}
     used_boxes: set[int] = set()
-    for ratio, ri, bi in pairs:
-        if ratio < _TITLE_MATCH_MIN:
-            break
+    for _, _, ri, bi in pairs:
         if ri in assigned or bi in used_boxes:
             continue
         assigned[ri] = boxes[bi]
@@ -286,6 +286,7 @@ def _parse_boxes(raw: str, sent_size: tuple[int, int]) -> list[_Box]:
         out.append(_Box(
             title=str(item.get("recipe_title", "")),
             coords=(px(box[0], sw), px(box[1], sh), px(box[2], sw), px(box[3], sh)),
+            kind=item.get("kind") if item.get("kind") == "finished" else "preparation",
         ))
     return out
 
