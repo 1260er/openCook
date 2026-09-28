@@ -75,6 +75,13 @@ def test_load_i18n_unknown_language_falls_back_to_english():
     assert en.units <= de.units
 
 
+def test_photo_prompts_accept_relevant_preparation_photos():
+    for lang in ("en", "de", "fr"):
+        prompt = load_i18n(lang).box_prompt.lower()
+        assert "dish_photos" in prompt
+        assert "grill" in prompt
+
+
 def test_every_catalog_carries_its_category_and_meal_aliases():
     """A language catalog is only useful if it can map the words the model answers with.
 
