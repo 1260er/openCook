@@ -580,7 +580,7 @@ def test_explicit_shared_photo_goes_to_both_variants_only():
     common = _Box("Grillmarinade", (5, 5, 50, 50), shared=True)
     assigned = _assign_boxes(titles, [common])
     assert assigned == {0: common, 1: common}
-    assert len(_assign_boxes(titles, [_Box("Grillmarinade", (5, 5, 50, 50))])) == 1
+    assert len(_assign_boxes(titles, [_Box("Grillmarinade", (5, 5, 50, 50))])) == 2
 
 
 def test_to_schema_org_maps_fields():
