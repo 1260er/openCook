@@ -2,6 +2,7 @@ package com.food.opencook.ui.review
 
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +29,7 @@ internal fun <T> ReorderableEditorList(
     val typography = MaterialTheme.typography
     val shapes = MaterialTheme.shapes
     AndroidView(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().clipToBounds(),
         factory = { context ->
             RecyclerView(context).apply {
                 layoutManager = LinearLayoutManager(context)
@@ -79,6 +80,19 @@ private class EditorAdapter<T>(
         ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0,
     ) {
         override fun isLongPressDragEnabled() = false
+
+        override fun interpolateOutOfBoundsScroll(
+            recyclerView: RecyclerView,
+            viewSize: Int,
+            viewSizeOutOfBounds: Int,
+            totalSize: Int,
+            msSinceStartScroll: Long,
+        ): Int {
+            val maxStep = (recyclerView.resources.displayMetrics.density * 4).toInt().coerceAtLeast(1)
+            return super.interpolateOutOfBoundsScroll(
+                recyclerView, viewSize, viewSizeOutOfBounds, totalSize, msSinceStartScroll,
+            ).coerceIn(-maxStep, maxStep)
+        }
 
         override fun onMove(
             recyclerView: RecyclerView,
