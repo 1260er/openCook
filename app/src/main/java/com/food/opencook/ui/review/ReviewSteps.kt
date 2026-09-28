@@ -1006,17 +1006,24 @@ private fun rememberListReorder(scroll: ScrollState, onMove: (from: Int, to: Int
     // same on a 90/120 Hz display, where a per-frame step would race through a list of
     // small ingredient cards twice as fast.
     val edgeZonePx = with(LocalDensity.current) { 48.dp.toPx() }
-    val maxStepPx = with(LocalDensity.current) { 8.dp.toPx() }
+    val maxStepPx = with(LocalDensity.current) { 5.dp.toPx() }
     LaunchedEffect(reorder, scroll, edgeZonePx, maxStepPx) {
         var last = withFrameNanos { it }
+        var speed = 0f
         while (true) {
             val now = withFrameNanos { it }
             val frames = ((now - last) / FRAME_60HZ_NANOS).coerceAtMost(3f)
             last = now
-            val v = reorder.scrollAtEdge(edgeZonePx, maxStepPx)
-            if ((v < 0f && scroll.value > 0) || (v > 0f && scroll.value < scroll.maxValue)) {
-                scroll.scrollBy(v * frames)
+            val targetSpeed = reorder.scrollAtEdge(edgeZonePx, maxStepPx)
+            // Ease into edge scrolling, but stop as soon as the finger leaves the edge.
+            speed = if (targetSpeed == 0f || speed * targetSpeed < 0f) 0f else speed
+            if (targetSpeed != 0f) speed += (targetSpeed - speed) * 0.25f
+            if ((speed < 0f && scroll.value > 0) || (speed > 0f && scroll.value < scroll.maxValue)) {
+                scroll.scrollBy(speed * frames)
             }
+            // Moving the list moves the card beneath a stationary finger. Drag events alone
+            // do not update the insertion marker during automatic scrolling.
+            if (!reorder.pointerY.isNaN()) reorder.hovered = reorder.rowAt(reorder.pointerY)
         }
     }
     return reorder
