@@ -113,13 +113,12 @@ private fun CardContent(
     selected: Boolean?,
 ) {
     Column {
-        Box(Modifier.fillMaxWidth().height(imageHeight.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
+        Box(Modifier.fillMaxWidth().height(imageHeight.dp)) {
             if (imageModel != null) {
                 AsyncImage(
                     model = imageModel,
                     contentDescription = null,
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
             } else {
